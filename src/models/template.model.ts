@@ -1,6 +1,6 @@
 import SectionModel from './section.model';
 
-export default class SheetModel {
+export default class TemplateModel {
   constructor(
     public id: string,
     public name: string,

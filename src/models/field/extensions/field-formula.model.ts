@@ -1,7 +1,6 @@
-import FieldModel from '../field.model';
+import BaseFieldWithValueModel from '../field-with-value.model';
 
-export default class FieldFormulaModel extends FieldModel {
-  public value: number;
+export default class FieldFormulaModel extends BaseFieldWithValueModel<number> {
   public formula: string;
 
   constructor(
@@ -14,9 +13,21 @@ export default class FieldFormulaModel extends FieldModel {
     formula: string,
     value: number = 0,
   ) {
-    super(id, key, name, isReadonly, isRequired, isHidden);
+    super(id, key, name, isReadonly, isRequired, isHidden, value);
 
     this.formula = formula;
-    this.value = value;
+  }
+
+  clone(): FieldFormulaModel {
+    return new FieldFormulaModel(
+      this.id,
+      this.key,
+      this.name,
+      this.readonly,
+      this.required,
+      this.hidden,
+      this.formula,
+      this.value,
+    );
   }
 }

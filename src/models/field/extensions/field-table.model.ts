@@ -1,8 +1,9 @@
-import FieldModel from '../field.model';
+import BaseFieldModel from '../field.model';
+import FieldModel from './field.model';
 
-export default class FieldTableModel<T = any> extends FieldModel {
+export default class FieldTableModel<T = any> extends BaseFieldModel {
   rows: T[];
-  columns: FieldModel[];
+  columns: BaseFieldModel[];
 
   constructor(
     id: string,
@@ -18,5 +19,18 @@ export default class FieldTableModel<T = any> extends FieldModel {
 
     this.rows = rows;
     this.columns = columns;
+  }
+
+  clone(): BaseFieldModel {
+    return new FieldTableModel(
+      this.id,
+      this.key,
+      this.name,
+      this.readonly,
+      this.required,
+      this.hidden,
+      this.columns.map(column => column.clone()),
+      [...this.rows],
+    );
   }
 }

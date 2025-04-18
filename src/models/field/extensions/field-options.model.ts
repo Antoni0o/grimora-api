@@ -1,6 +1,6 @@
-import FieldModel from '../field.model';
+import BaseFieldModel from '../field.model';
 
-export default class FieldOptionsModel extends FieldModel {
+export default class FieldOptionsModel extends BaseFieldModel {
   public options: string[];
 
   constructor(
@@ -15,5 +15,11 @@ export default class FieldOptionsModel extends FieldModel {
     super(id, key, name, isReadonly, isRequired, isHidden);
 
     this.options = options;
+  }
+
+  clone(): BaseFieldModel {
+    return new FieldOptionsModel(this.id, this.key, this.name, this.readonly, this.required, this.hidden, [
+      ...this.options,
+    ]);
   }
 }

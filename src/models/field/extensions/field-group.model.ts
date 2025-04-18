@@ -1,7 +1,7 @@
-import FieldModel from '../field.model';
+import BaseFieldModel from '../field.model';
 
-export default class FieldGroupModel extends FieldModel {
-  public children: FieldModel[];
+export default class FieldGroupModel extends BaseFieldModel {
+  public children: BaseFieldModel[];
 
   constructor(
     id: string,
@@ -10,10 +10,22 @@ export default class FieldGroupModel extends FieldModel {
     isReadonly: boolean,
     isRequired: boolean,
     isHidden: boolean,
-    children: FieldModel[] = [],
+    children: BaseFieldModel[] = [],
   ) {
     super(id, key, name, isReadonly, isRequired, isHidden);
 
     this.children = children;
+  }
+
+  clone(): FieldGroupModel {
+    return new FieldGroupModel(
+      this.id,
+      this.key,
+      this.name,
+      this.readonly,
+      this.required,
+      this.hidden,
+      this.children.map(child => child.clone()),
+    );
   }
 }

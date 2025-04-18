@@ -1,10 +1,12 @@
-export default class FieldModel {
+export default abstract class BaseFieldModel {
   constructor(
     public id: string,
     public key: string,
     public name: string,
-    public isReadonly: boolean,
-    public isRequired: boolean,
-    public isHidden: boolean,
+    public readonly: boolean,
+    public required: boolean,
+    public hidden: boolean,
   ) {}
+
+  abstract clone(): BaseFieldModel;
 }

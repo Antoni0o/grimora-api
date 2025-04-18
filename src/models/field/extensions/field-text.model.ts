@@ -1,7 +1,6 @@
-import FieldModel from '../field.model';
+import BaseFieldWithValueModel from '../field-with-value.model';
 
-export default class FieldTextModel extends FieldModel {
-  public value: string;
+export default class FieldTextModel extends BaseFieldWithValueModel<string> {
   public defaultValue?: string;
 
   constructor(
@@ -14,9 +13,21 @@ export default class FieldTextModel extends FieldModel {
     value: string = '',
     defaultValue?: string,
   ) {
-    super(id, key, name, isReadonly, isRequired, isHidden);
+    super(id, key, name, isReadonly, isRequired, isHidden, value);
 
-    this.value = value;
     this.defaultValue = defaultValue;
+  }
+
+  clone(): FieldTextModel {
+    return new FieldTextModel(
+      this.id,
+      this.key,
+      this.name,
+      this.readonly,
+      this.required,
+      this.hidden,
+      this.value,
+      this.defaultValue,
+    );
   }
 }
