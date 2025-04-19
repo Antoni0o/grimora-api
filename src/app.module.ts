@@ -1,22 +1,38 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { KeycloakConnectModule } from 'nest-keycloak-connect';
-import { ConfigModule, ConfigService } from '@nestjs/config';
-import { KeycloakConfigService } from './services/keycloack-config.service';
+import { AuthGuard, KeycloakConnectModule, ResourceGuard, RoleGuard } from 'nest-keycloak-connect';
+import { ConfigModule } from '@nestjs/config';
+import { KeycloakConfigService } from './config/keycloack-config.service';
+import { APP_GUARD } from '@nestjs/core';
+import { KeycloakConfigModule } from './config/keycloak-config.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
     }),
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+    // @typescript-eslint/no-unsafe-member-access
     KeycloakConnectModule.registerAsync({
       useExisting: KeycloakConfigService,
-      inject: [ConfigService],
+      imports: [KeycloakConfigModule],
     }),
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_GUARD,
+      useClass: AuthGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: ResourceGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: RoleGuard,
+    },
+  ],
 })
 export class AppModule {}
