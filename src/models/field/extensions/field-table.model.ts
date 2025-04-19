@@ -9,13 +9,13 @@ export default class FieldTableModel<T = any> extends BaseFieldModel {
     id: string,
     key: string,
     name: string,
-    isReadonly: boolean,
-    isRequired: boolean,
-    isHidden: boolean,
+    readonly: boolean,
+    required: boolean,
+    hidden: boolean,
     columns: FieldModel[] = [],
     rows: T[] = [],
   ) {
-    super(id, key, name, isReadonly, isRequired, isHidden);
+    super(id, key, name, readonly, required, hidden);
 
     this.rows = rows;
     this.columns = columns;

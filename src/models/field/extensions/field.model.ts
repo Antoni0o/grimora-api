@@ -1,8 +1,8 @@
 import BaseFieldModel from '../field.model';
 
 export default class FieldModel extends BaseFieldModel {
-  constructor(id: string, key: string, name: string, isReadonly: boolean, isRequired: boolean, isHidden: boolean) {
-    super(id, key, name, isReadonly, isRequired, isHidden);
+  constructor(id: string, key: string, name: string, readonly: boolean, required: boolean, hidden: boolean) {
+    super(id, key, name, readonly, required, hidden);
   }
 
   clone(): FieldModel {

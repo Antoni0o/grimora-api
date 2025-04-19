@@ -7,13 +7,13 @@ export default class FieldFormulaModel extends BaseFieldWithValueModel<number> {
     id: string,
     key: string,
     name: string,
-    isReadonly: boolean,
-    isRequired: boolean,
-    isHidden: boolean,
+    readonly: boolean,
+    required: boolean,
+    hidden: boolean,
     formula: string,
     value: number = 0,
   ) {
-    super(id, key, name, isReadonly, isRequired, isHidden, value);
+    super(id, key, name, readonly, required, hidden, value);
 
     this.formula = formula;
   }

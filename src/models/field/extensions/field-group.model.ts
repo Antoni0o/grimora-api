@@ -7,12 +7,12 @@ export default class FieldGroupModel extends BaseFieldModel {
     id: string,
     key: string,
     name: string,
-    isReadonly: boolean,
-    isRequired: boolean,
-    isHidden: boolean,
+    readonly: boolean,
+    required: boolean,
+    hidden: boolean,
     children: BaseFieldModel[] = [],
   ) {
-    super(id, key, name, isReadonly, isRequired, isHidden);
+    super(id, key, name, readonly, required, hidden);
 
     this.children = children;
   }
