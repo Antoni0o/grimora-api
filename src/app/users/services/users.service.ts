@@ -1,13 +1,15 @@
 import { Injectable } from '@nestjs/common';
-import UserResponseModel from './models/user-response.model';
-import UserRequestModel from './models/user-request.model';
+import UserResponseModel from '../models/user-response.model';
+import { InjectRepository } from '@nestjs/typeorm';
+import { User } from '../entities/user.entity';
+import { Repository } from 'typeorm';
 
 @Injectable()
-export class UserService {
-  create(user: UserRequestModel): Promise<void> {
-    console.log(user);
-    return Promise.resolve();
-  }
+export class UsersService {
+  constructor(
+    @InjectRepository(User)
+    private usersRepository: Repository<User>,
+  ) {}
 
   findByEmail(email: string): Promise<UserResponseModel> {
     return Promise.resolve(new UserResponseModel({ id: '1', email, name: 'John Doe' }));

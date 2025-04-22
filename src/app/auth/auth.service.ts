@@ -1,19 +1,21 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
-import { UserService } from '../user/user.service';
+import { UsersService } from '../users/services/users.service';
 import { JwtService } from '@nestjs/jwt';
 import JwtPayloadModel from './models/jwt-payload.model';
+import { CreateUserService } from '../users/services/create/create-user.service';
 
 @Injectable()
 export class AuthService {
   constructor(
-    private userService: UserService,
+    private usersService: UsersService,
+    private createUserService: CreateUserService,
     private jwtService: JwtService,
   ) {}
 
   async register(email: string, password: string, name: string) {
     const hashedPassword = await bcrypt.hash(password, 10);
-    return this.userService.create({
+    return this.createUserService.create({
       email,
       password: hashedPassword,
       name,
@@ -21,7 +23,7 @@ export class AuthService {
   }
 
   async login(email: string, password: string) {
-    const user = await this.userService.findByEmail(email);
+    const user = await this.usersService.findByEmail(email);
     const isPassValid = await bcrypt.compare(password, user.password || '');
 
     if (!user || (user.password && !isPassValid)) throw new UnauthorizedException('Credenciais inválidas');
@@ -38,7 +40,7 @@ export class AuthService {
       expiresIn: '7d',
     });
 
-    await this.userService.saveRefreshToken(user.id, refreshToken);
+    await this.usersService.saveRefreshToken(user.id, refreshToken);
 
     return {
       access_token: accessToken,
@@ -52,7 +54,7 @@ export class AuthService {
         secret: process.env.JWT_SECRET,
       });
 
-      const user = await this.userService.findById(payload.sub);
+      const user = await this.usersService.findById(payload.sub);
 
       if (!user) throw new UnauthorizedException();
 
