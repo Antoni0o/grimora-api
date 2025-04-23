@@ -37,11 +37,11 @@ export class AuthService {
     const user = await this.usersService.findByEmail(email);
     const isPassValid = await bcrypt.compare(password, user.password || '');
 
-    if (user && !user.isVerified) throw new UnauthorizedException('User not verified');
+    if (user && !user.isVerified) throw new UnauthorizedException('User is not verified');
 
     if (!user || (user.password && !isPassValid)) throw new UnauthorizedException('Invalid credentials');
 
-    const payload: JwtPayloadModel = { sub: user.id, email: user.email };
+    const payload: JwtPayloadModel = { sub: user.id, email: user.email, refreshToken: user.refreshToken || '' };
 
     const accessToken = this.jwtService.sign(payload, {
       secret: process.env.JWT_SECRET,

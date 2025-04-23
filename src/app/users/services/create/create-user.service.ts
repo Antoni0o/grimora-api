@@ -10,7 +10,7 @@ import { randomBytes } from 'crypto';
 export class CreateUserService {
   constructor(
     @InjectRepository(User)
-    private usersRepository: Repository<User>,
+    private repository: Repository<User>,
   ) {}
 
   async create(user: UserRequestModel): Promise<UserResponseModel> {
@@ -21,7 +21,7 @@ export class CreateUserService {
     const verificationToken = randomBytes(32).toString('hex');
     newUser.verificationToken = verificationToken;
 
-    const response = await this.usersRepository.save(newUser);
+    const response = await this.repository.save(newUser);
     newUser.id = response.id;
 
     return new UserResponseModel(newUser);
