@@ -40,6 +40,7 @@ describe('CreateUserService', () => {
 
     expect(response.id).toBeDefined();
     expect(response.email).toBe(request.email);
+
     // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(repository.save).toHaveBeenCalledWith(
       expect.objectContaining({ email: request.email, name: request.name, password: request.password }),

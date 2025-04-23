@@ -1,3 +1,5 @@
+import { User } from '../entities/user.entity';
+
 export default class UserResponseModel {
   id!: string;
   email!: string;
@@ -5,7 +7,11 @@ export default class UserResponseModel {
   password?: string;
   refreshToken?: string;
 
-  constructor(partial: Partial<UserResponseModel>) {
-    Object.assign(this, partial);
+  constructor(user: User) {
+    this.id = user.id;
+    this.email = user.email;
+    this.name = user.name;
+    this.password = user.password;
+    this.refreshToken = user.refreshToken;
   }
 }
