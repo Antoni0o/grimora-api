@@ -1,0 +1,24 @@
+import { Injectable } from '@nestjs/common';
+import { Repository } from 'typeorm';
+import { User } from '../../entities/user.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import UserResponseModel from '../../models/user-response.model';
+
+@Injectable()
+export default class FindUserService {
+  constructor(
+    @InjectRepository(User)
+    private repository: Repository<User>,
+  ) {}
+
+  async findById(id: string): Promise<UserResponseModel> {
+    const user = await this.repository.findOneBy({ id });
+
+    return new UserResponseModel(user!);
+  }
+
+  findByEmail(email: string): string {
+    console.log('findByEmail', email);
+    throw new Error('Method not implemented.');
+  }
+}
