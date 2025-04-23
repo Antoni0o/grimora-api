@@ -16,7 +16,7 @@ export class EmailService {
   }
 
   async sendMail(to: string, subject: string, html: string) {
-    const from = this.configService.get('EMAIL_FROM'); // exemplo: 'Grimora <noreply@onresend.com>'
+    const from = this.configService.get('EMAIL_FROM');
 
     const { error } = await this.resend.emails.send({
       from,
