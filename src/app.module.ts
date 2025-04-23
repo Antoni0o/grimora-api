@@ -5,6 +5,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { MongooseModule } from '@nestjs/mongoose';
 import { UsersModule } from './app/users/users.module';
+import { EmailModule } from './email/email.module';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { UsersModule } from './app/users/users.module';
       }),
     }),
     UsersModule,
+    EmailModule,
   ],
   controllers: [AppController],
   providers: [AppService],

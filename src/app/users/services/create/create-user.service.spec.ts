@@ -67,6 +67,17 @@ describe('CreateUserService', () => {
       }),
     );
   });
+
+  it('should generate verificationToken before saving', async () => {
+    const request = new UserRequestModel({ email: 'test@mail.com', name: 'Test User', password: 'password123' });
+
+    const user = buildUserModel(request);
+    jest.spyOn(repository, 'save').mockResolvedValue(user);
+
+    const response = await service.create(request);
+
+    expect(response.verificationToken).toBeDefined();
+  });
 });
 
 function buildUserModel(request: UserRequestModel) {

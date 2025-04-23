@@ -4,29 +4,42 @@ import { UsersService } from '../users/services/users.service';
 import { JwtService } from '@nestjs/jwt';
 import JwtPayloadModel from './models/jwt-payload.model';
 import { CreateUserService } from '../users/services/create/create-user.service';
+import { EmailService } from '../../email/email.service';
+import { ConfigService } from '@nestjs/config';
+import { generateConfirmEmailTemplate } from '../../email/templates/confirm-email.template';
 
 @Injectable()
 export class AuthService {
   constructor(
+    private configService: ConfigService,
+    private emailService: EmailService,
     private usersService: UsersService,
     private createUserService: CreateUserService,
     private jwtService: JwtService,
   ) {}
 
   async register(email: string, password: string, name: string) {
-    const hashedPassword = await bcrypt.hash(password, 10);
-    return this.createUserService.create({
+    const user = await this.createUserService.create({
       email,
-      password: hashedPassword,
       name,
+      password,
     });
+
+    const appUrl = this.configService.get<string>('APP_URL');
+    const mail = generateConfirmEmailTemplate(user.verificationToken!, appUrl!);
+
+    await this.emailService.sendMail(email, 'Confirm your e-mail', mail);
+
+    return { message: 'User registered successfully. Verify your e-mail!' };
   }
 
   async login(email: string, password: string) {
     const user = await this.usersService.findByEmail(email);
     const isPassValid = await bcrypt.compare(password, user.password || '');
 
-    if (!user || (user.password && !isPassValid)) throw new UnauthorizedException('Credenciais inválidas');
+    if (user && !user.isVerified) throw new UnauthorizedException('User not verified');
+
+    if (!user || (user.password && !isPassValid)) throw new UnauthorizedException('Invalid credentials');
 
     const payload: JwtPayloadModel = { sub: user.id, email: user.email };
 

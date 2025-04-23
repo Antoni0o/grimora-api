@@ -3,6 +3,8 @@ import { AuthService } from './auth.service';
 import { UsersService } from '../users/services/users.service';
 import { JwtService } from '@nestjs/jwt';
 import { CreateUserService } from '../users/services/create/create-user.service';
+import { EmailService } from '../../email/email.service';
+import { ConfigService } from '@nestjs/config';
 
 describe('AuthService', () => {
   let service: AuthService;
@@ -33,6 +35,13 @@ describe('AuthService', () => {
             verify: jest.fn(),
           },
         },
+        {
+          provide: EmailService,
+          useValue: {
+            sendMail: jest.fn(),
+          },
+        },
+        ConfigService,
       ],
     }).compile();
 

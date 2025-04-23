@@ -12,7 +12,8 @@ export class UsersService {
   ) {}
 
   findByEmail(email: string): Promise<UserResponseModel> {
-    return Promise.resolve(new UserResponseModel({ id: '1', email, name: 'John Doe' }));
+    console.log(`User email: ${email}`);
+    throw new Error('Method not implemented.');
   }
 
   findById(id: string): Promise<UserResponseModel> {

@@ -4,6 +4,7 @@ import UserResponseModel from '../../models/user-response.model';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '../../entities/user.entity';
+import { randomBytes } from 'crypto';
 
 @Injectable()
 export class CreateUserService {
@@ -17,8 +18,12 @@ export class CreateUserService {
 
     Object.assign(newUser, user);
 
-    const response = await this.usersRepository.save(newUser);
+    const verificationToken = randomBytes(32).toString('hex');
+    newUser.verificationToken = verificationToken;
 
-    return new UserResponseModel(response);
+    const response = await this.usersRepository.save(newUser);
+    newUser.id = response.id;
+
+    return new UserResponseModel(newUser);
   }
 }
