@@ -11,7 +11,7 @@ export default class RefreshTokenService {
     private repository: Repository<User>,
   ) {}
 
-  async saveRefreshToken(userId: string, refreshToken: string): Promise<UserResponseModel> {
+  async set(userId: string, refreshToken: string): Promise<UserResponseModel> {
     const user = await this.repository.findOneBy({ id: userId });
 
     if (!user) throw new NotFoundException('User not found');
@@ -22,7 +22,7 @@ export default class RefreshTokenService {
     return new UserResponseModel(updatedUser);
   }
 
-  async getRefreshToken(userId: string): Promise<string | undefined> {
+  async get(userId: string): Promise<string | undefined> {
     const user = await this.repository.findOneBy({ id: userId });
 
     if (!user) return undefined;

@@ -1,10 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AuthService } from './auth.service';
-import { UsersService } from '../users/services/users.service';
 import { JwtService } from '@nestjs/jwt';
 import { CreateUserService } from '../users/services/create/create-user.service';
-import { EmailService } from '../../email/email.service';
+import { EmailService } from '../email/email.service';
 import { ConfigService } from '@nestjs/config';
+import FindUserService from '../users/services/find/find-user.service';
+import RefreshTokenService from '../users/services/refresh-token/refresh-token.service';
 
 describe('AuthService', () => {
   let service: AuthService;
@@ -14,18 +15,23 @@ describe('AuthService', () => {
       providers: [
         AuthService,
         {
-          provide: UsersService,
-          useValue: {
-            findByEmail: jest.fn(),
-            findById: jest.fn(),
-            saveRefreshToken: jest.fn(),
-            getRefreshToken: jest.fn(),
-          },
-        },
-        {
           provide: CreateUserService,
           useValue: {
             create: jest.fn(),
+          },
+        },
+        {
+          provide: FindUserService,
+          useValue: {
+            findByEmail: jest.fn(),
+            findById: jest.fn(),
+          },
+        },
+        {
+          provide: RefreshTokenService,
+          useValue: {
+            set: jest.fn(),
+            get: jest.fn(),
           },
         },
         {

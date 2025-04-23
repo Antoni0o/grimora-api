@@ -1,19 +1,21 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
-import { UsersService } from '../users/services/users.service';
 import { JwtService } from '@nestjs/jwt';
 import JwtPayloadModel from './models/jwt-payload.model';
 import { CreateUserService } from '../users/services/create/create-user.service';
-import { EmailService } from '../../email/email.service';
+import { EmailService } from '../email/email.service';
 import { ConfigService } from '@nestjs/config';
-import { generateConfirmEmailTemplate } from '../../email/templates/confirm-email.template';
+import { generateConfirmEmailTemplate } from '../email/templates/confirm-email.template';
+import FindUserService from '../users/services/find/find-user.service';
+import RefreshTokenService from '../users/services/refresh-token/refresh-token.service';
 
 @Injectable()
 export class AuthService {
   constructor(
     private configService: ConfigService,
     private emailService: EmailService,
-    private usersService: UsersService,
+    private findUserService: FindUserService,
+    private refreshTokenService: RefreshTokenService,
     private createUserService: CreateUserService,
     private jwtService: JwtService,
   ) {}
@@ -34,7 +36,7 @@ export class AuthService {
   }
 
   async login(email: string, password: string) {
-    const user = await this.usersService.findByEmail(email);
+    const user = await this.findUserService.findByEmail(email);
     const isPassValid = await bcrypt.compare(password, user.password || '');
 
     if (user && !user.isVerified) throw new UnauthorizedException('User is not verified');
@@ -53,7 +55,7 @@ export class AuthService {
       expiresIn: '7d',
     });
 
-    await this.usersService.saveRefreshToken(user.id, refreshToken);
+    await this.refreshTokenService.set(user.id, refreshToken);
 
     return {
       access_token: accessToken,
@@ -67,7 +69,7 @@ export class AuthService {
         secret: process.env.JWT_SECRET,
       });
 
-      const user = await this.usersService.findById(payload.sub);
+      const user = await this.findUserService.findById(payload.sub);
 
       if (!user) throw new UnauthorizedException();
 

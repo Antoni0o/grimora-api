@@ -40,7 +40,7 @@ describe('RefreshTokenService', () => {
     jest.spyOn(repository, 'findOneBy').mockResolvedValue(user);
     jest.spyOn(repository, 'save').mockResolvedValue(user);
 
-    const response = await service.saveRefreshToken(user.id, refreshToken);
+    const response = await service.set(user.id, refreshToken);
 
     expect(response.id).toBe(user.id);
     expect(response.refreshToken).toBe(refreshToken);
@@ -58,7 +58,7 @@ describe('RefreshTokenService', () => {
 
     jest.spyOn(repository, 'findOneBy').mockResolvedValue(null);
 
-    await expect(service.saveRefreshToken(user.id, refreshToken)).rejects.toThrow(NotFoundException);
+    await expect(service.set(user.id, refreshToken)).rejects.toThrow(NotFoundException);
 
     // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(repository.findOneBy).toHaveBeenCalledWith(expect.objectContaining({ id: user.id }));
@@ -74,7 +74,7 @@ describe('RefreshTokenService', () => {
     user.refreshToken = refreshToken;
     jest.spyOn(repository, 'findOneBy').mockResolvedValue(user);
 
-    const response = await service.getRefreshToken(user.id);
+    const response = await service.get(user.id);
 
     expect(response).toBe(refreshToken);
 
@@ -88,7 +88,7 @@ describe('RefreshTokenService', () => {
     const user = buildUserModel(request);
     jest.spyOn(repository, 'findOneBy').mockResolvedValue(null);
 
-    const response = await service.getRefreshToken(user.id);
+    const response = await service.get(user.id);
 
     expect(response).toBe(undefined);
 
@@ -102,7 +102,7 @@ describe('RefreshTokenService', () => {
     const user = buildUserModel(request);
     jest.spyOn(repository, 'findOneBy').mockResolvedValue(user);
 
-    const response = await service.getRefreshToken(user.id);
+    const response = await service.get(user.id);
 
     expect(response).toBe(undefined);
 
