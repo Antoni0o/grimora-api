@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { User } from '../../entities/user.entity';
 import UserRequestModel from '../../models/user-request.model';
 import FindUserService from './find-user.service';
+import { NotFoundException } from '@nestjs/common';
 
 describe('FindUserService', () => {
   let service: FindUserService;
@@ -44,6 +45,17 @@ describe('FindUserService', () => {
     // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(repository.findOneBy).toHaveBeenCalledWith(expect.objectContaining({ id: user.id }));
   });
+
+  it('should throw error when user by id isnt found', async () => {
+    jest.spyOn(repository, 'findOneBy').mockResolvedValue(null);
+
+    await expect(service.findById('id')).rejects.toThrow(NotFoundException);
+
+    // eslint-disable-next-line @typescript-eslint/unbound-method
+    expect(repository.findOneBy).toHaveBeenCalled();
+  });
+
+  it('should find an user by email', async () => {});
 });
 
 function buildUserModel(request: UserRequestModel) {
