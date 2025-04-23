@@ -49,13 +49,35 @@ describe('FindUserService', () => {
   it('should throw error when user by id isnt found', async () => {
     jest.spyOn(repository, 'findOneBy').mockResolvedValue(null);
 
-    await expect(service.findById('id')).rejects.toThrow(NotFoundException);
+    await expect(service.findByEmail('id')).rejects.toThrow(NotFoundException);
 
     // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(repository.findOneBy).toHaveBeenCalled();
   });
 
-  it('should find an user by email', async () => {});
+  it('should find an user by email', async () => {
+    const request = new UserRequestModel({ email: 'test@mail.com', name: 'Test User', password: 'password123' });
+
+    const user = buildUserModel(request);
+    jest.spyOn(repository, 'findOneBy').mockResolvedValue(user);
+
+    const response = await service.findByEmail(user.email);
+
+    expect(response.id).toBe(user.id);
+    expect(response.email).toBe(request.email);
+
+    // eslint-disable-next-line @typescript-eslint/unbound-method
+    expect(repository.findOneBy).toHaveBeenCalledWith(expect.objectContaining({ email: user.email }));
+  });
+
+  it('should throw error when user by email isnt found', async () => {
+    jest.spyOn(repository, 'findOneBy').mockResolvedValue(null);
+
+    await expect(service.findByEmail('test@mail.com')).rejects.toThrow(NotFoundException);
+
+    // eslint-disable-next-line @typescript-eslint/unbound-method
+    expect(repository.findOneBy).toHaveBeenCalled();
+  });
 });
 
 function buildUserModel(request: UserRequestModel) {

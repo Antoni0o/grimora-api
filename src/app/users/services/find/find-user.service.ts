@@ -19,8 +19,11 @@ export default class FindUserService {
     return new UserResponseModel(user);
   }
 
-  findByEmail(email: string): string {
-    console.log('findByEmail', email);
-    throw new Error('Method not implemented.');
+  async findByEmail(email: string): Promise<UserResponseModel> {
+    const user = await this.repository.findOneBy({ email });
+
+    if (user === null) throw new NotFoundException('User not found');
+
+    return new UserResponseModel(user);
   }
 }
