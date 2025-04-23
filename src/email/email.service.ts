@@ -26,7 +26,7 @@ export class EmailService {
     });
 
     if (error) {
-      throw new Error(`Erro ao enviar e-mail: ${error.message}`);
+      throw new Error(`Error when try to send mail: ${error.message}`);
     }
   }
 }
