@@ -22,8 +22,11 @@ export default class RefreshTokenService {
     return new UserResponseModel(updatedUser);
   }
 
-  getRefreshToken(userId: string): Promise<string | undefined> {
-    console.log(`User ID: ${userId}`);
-    throw new Error('Method not implemented.');
+  async getRefreshToken(userId: string): Promise<string | undefined> {
+    const user = await this.repository.findOneBy({ id: userId });
+
+    if (!user) return undefined;
+
+    return user.refreshToken;
   }
 }

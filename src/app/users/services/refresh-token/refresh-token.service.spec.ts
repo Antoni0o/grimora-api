@@ -65,6 +65,50 @@ describe('RefreshTokenService', () => {
     // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(repository.save).not.toHaveBeenCalled();
   });
+
+  it('should get an user refresh token', async () => {
+    const request = new UserRequestModel({ email: 'test@mail.com', name: 'Test User', password: 'password123' });
+    const refreshToken = 'refresh-token';
+
+    const user = buildUserModel(request);
+    user.refreshToken = refreshToken;
+    jest.spyOn(repository, 'findOneBy').mockResolvedValue(user);
+
+    const response = await service.getRefreshToken(user.id);
+
+    expect(response).toBe(refreshToken);
+
+    // eslint-disable-next-line @typescript-eslint/unbound-method
+    expect(repository.findOneBy).toHaveBeenCalledWith(expect.objectContaining({ id: user.id }));
+  });
+
+  it('should return undefined when dont find user', async () => {
+    const request = new UserRequestModel({ email: 'test@mail.com', name: 'Test User', password: 'password123' });
+
+    const user = buildUserModel(request);
+    jest.spyOn(repository, 'findOneBy').mockResolvedValue(null);
+
+    const response = await service.getRefreshToken(user.id);
+
+    expect(response).toBe(undefined);
+
+    // eslint-disable-next-line @typescript-eslint/unbound-method
+    expect(repository.findOneBy).toHaveBeenCalledWith(expect.objectContaining({ id: user.id }));
+  });
+
+  it('should return undefined when dont find refreshToken', async () => {
+    const request = new UserRequestModel({ email: 'test@mail.com', name: 'Test User', password: 'password123' });
+
+    const user = buildUserModel(request);
+    jest.spyOn(repository, 'findOneBy').mockResolvedValue(user);
+
+    const response = await service.getRefreshToken(user.id);
+
+    expect(response).toBe(undefined);
+
+    // eslint-disable-next-line @typescript-eslint/unbound-method
+    expect(repository.findOneBy).toHaveBeenCalledWith(expect.objectContaining({ id: user.id }));
+  });
 });
 
 function buildUserModel(request: UserRequestModel) {
