@@ -5,12 +5,10 @@ import TemplateModel from './template.model';
 
 export default class SheetModel {
   id: string;
-  template: TemplateModel;
   fields: Map<string, BaseFieldModel>;
 
   constructor(id: string, template: TemplateModel) {
     this.id = id;
-    this.template = template;
     this.fields = new Map();
 
     this.startupFields(template);

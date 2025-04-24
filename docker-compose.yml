@@ -8,6 +8,8 @@ services:
       - POSTGRES_DB=usersdb
     networks:
       - grimora-network
+    ports:
+      - '5432:5432'
     restart: always
     volumes:
       - postgres_data:/var/lib/postgresql/data
@@ -21,6 +23,8 @@ services:
       - MONGO_INITDB_DATABASE=grimora_db
     networks:
       - grimora-network
+    ports:
+      - '27017:27017'
     restart: always
     volumes:
       - mongodb_data:/data/db

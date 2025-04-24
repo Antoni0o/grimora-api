@@ -8,6 +8,7 @@ import { ConfigService } from '@nestjs/config';
 import { generateConfirmEmailTemplate } from '../email/templates/confirm-email.template';
 import FindUserService from '../users/services/find/find-user.service';
 import RefreshTokenService from '../users/services/refresh-token/refresh-token.service';
+import UserRequestModel from '../users/models/user-request.model';
 
 @Injectable()
 export class AuthService {
@@ -21,11 +22,7 @@ export class AuthService {
   ) {}
 
   async register(email: string, password: string, name: string) {
-    const user = await this.createUserService.create({
-      email,
-      name,
-      password,
-    });
+    const user = await this.createUserService.create(new UserRequestModel({ email, password, name }));
 
     const appUrl = this.configService.get<string>('APP_URL');
     const mail = generateConfirmEmailTemplate(user.verificationToken!, appUrl!);

@@ -6,6 +6,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { MongooseModule } from '@nestjs/mongoose';
 import { UsersModule } from './app/users/users.module';
 import { EmailModule } from './app/email/email.module';
+import { AuthModule } from './app/auth/auth.module';
+import { SystemsModule } from './app/systems/systems.module';
 
 @Module({
   imports: [
@@ -19,9 +21,9 @@ import { EmailModule } from './app/email/email.module';
         type: 'postgres',
         host: configService.get<string>('PG_HOST'),
         port: configService.get<number>('PG_PORT'),
+        database: configService.get<string>('PG_DATABASE'),
         username: configService.get<string>('PG_USER'),
         password: configService.get<string>('PG_PASSWORD'),
-        database: configService.get<string>('PG_DATABASE'),
         entities: [__dirname + '/**/*.entity{.ts,.js}'],
         synchronize: true, // desabilitar em produção
       }),
@@ -34,6 +36,8 @@ import { EmailModule } from './app/email/email.module';
     }),
     UsersModule,
     EmailModule,
+    AuthModule,
+    SystemsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
