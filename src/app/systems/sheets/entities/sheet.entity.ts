@@ -15,13 +15,13 @@ export default class Sheet {
   @Prop({
     type: raw({
       name: { type: String, required: true },
-      key: { type: String, required: true },
-      fields: { type: [Types.ObjectId], ref: 'Field' },
+      order: { type: Number, required: true },
+      fields: { type: [{ type: Types.ObjectId, ref: 'Field' }] },
     }),
   })
   public sections!: Array<{
     name: string;
-    key: string;
+    order: number;
     fields: Field[];
   }>;
 }

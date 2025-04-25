@@ -11,6 +11,9 @@ export class FieldType {
   @Prop({ required: true })
   label!: string;
 
+  @Prop({ type: Boolean, default: false })
+  default!: boolean;
+
   @Prop({ type: Object })
   configSchema!: object;
 }
@@ -38,7 +41,7 @@ export default class Field {
   @Prop({ type: Boolean, default: false })
   public readonly!: boolean;
 
-  @Prop({ type: Array, default: [] })
+  @Prop({ type: [Field], default: [] })
   public children?: Field[];
 
   @Prop({ type: String, required: false })

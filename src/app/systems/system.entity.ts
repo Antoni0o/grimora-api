@@ -23,13 +23,13 @@ export default class System {
   @Prop({ type: Boolean, default: false })
   public isPublic!: boolean;
 
-  @Prop({ type: [Types.ObjectId], ref: 'FieldType', required: true })
-  public fieldTypes!: FieldType[];
-
   @Prop({ type: Types.ObjectId, ref: 'Template', required: true })
   public template!: Template;
 
-  @Prop({ type: [Types.ObjectId], ref: 'Resources', required: true })
+  @Prop({ type: [{ type: Types.ObjectId, ref: 'FieldType' }], required: true })
+  public fieldTypes!: FieldType[];
+
+  @Prop({ type: [{ type: Types.ObjectId, ref: 'Resources' }], required: true })
   public resources!: Resources[];
 
   @Prop({ type: String, required: true })
