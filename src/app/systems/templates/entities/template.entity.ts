@@ -1,6 +1,6 @@
 import { Prop, raw, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument } from 'mongoose';
-import Field, { FieldSchema } from '../../fields/entities/field.entity';
+import { HydratedDocument, Types } from 'mongoose';
+import Field from '../../fields/entities/field.entity';
 
 export type TemplateDocument = HydratedDocument<Template>;
 
@@ -14,7 +14,7 @@ export default class Template {
       raw({
         name: { type: String, required: true },
         order: { type: Number, required: true },
-        fields: { type: [FieldSchema] },
+        fields: [{ type: Types.ObjectId, ref: 'Field' }],
       }),
     ],
   })

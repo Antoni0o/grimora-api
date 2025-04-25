@@ -1,22 +1,8 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
+import FieldType from './field-type.entity';
 
 export type FieldDocument = HydratedDocument<Field>;
-
-@Schema()
-export class FieldType {
-  @Prop({ required: true })
-  key!: string;
-
-  @Prop({ required: true })
-  label!: string;
-
-  @Prop({ type: Boolean, default: false })
-  default!: boolean;
-
-  @Prop({ type: Object })
-  configSchema!: object;
-}
 
 @Schema()
 export default class Field {
@@ -41,7 +27,7 @@ export default class Field {
   @Prop({ type: Boolean, default: false })
   public readonly!: boolean;
 
-  @Prop({ type: [Field], default: [] })
+  @Prop({ type: [Types.ObjectId], ref: Field.name, default: [] })
   public children?: Field[];
 
   @Prop({ type: String, required: false })

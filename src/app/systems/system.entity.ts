@@ -2,7 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
 import Resources from './resources/entities/resources.entity';
 import Template from './templates/entities/template.entity';
-import { FieldType } from './fields/entities/field.entity';
+import FieldType from './fields/entities/field-type.entity';
 
 export type SystemDocument = HydratedDocument<System>;
 
