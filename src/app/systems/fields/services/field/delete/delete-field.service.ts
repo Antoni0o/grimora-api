@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import Field from '../../entities/field.entity';
 import { Model } from 'mongoose';
+import Field from '../../../entities/field.entity';
 
 @Injectable()
 export default class DeleteFieldService {

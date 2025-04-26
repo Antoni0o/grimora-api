@@ -1,9 +1,9 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import Field from '../../entities/field.entity';
 import { Document, Model, Types } from 'mongoose';
-import UpdateFieldDto from '../../dtos/update-field.dto';
-import FieldType from '../../entities/field-type.entity';
+import FieldTypeService from '../../field-type/field-type.service';
+import UpdateFieldDto from '../../../dtos/update-field.dto';
+import Field from '../../../entities/field.entity';
 
 type MongooseDocumentModel<T> = Document<unknown, object, T> & T & { _id: Types.ObjectId } & { __v: number };
 
@@ -13,7 +13,7 @@ export default class UpdateFieldService {
 
   constructor(
     @InjectModel(Field.name) private fieldModel: Model<Field>,
-    @InjectModel(FieldType.name) private fieldTypeModel: Model<FieldType>,
+    @Inject(FieldTypeService) private fieldTypeService: FieldTypeService,
   ) {}
 
   async update(fieldId: string, request: UpdateFieldDto) {
@@ -63,9 +63,7 @@ export default class UpdateFieldService {
     await field.save();
 
     if (this.isNotNullOrEmpty(this.request.typeId)) {
-      const fieldType = await this.fieldTypeModel.findById(this.request.typeId);
-
-      if (!fieldType) throw new NotFoundException(`Field Type not found with id: ${this.request.typeId}`);
+      await this.fieldTypeService.find(this.request.typeId!);
 
       this.fieldModel.updateOne({ _id: fieldId }, { type: this.request.typeId });
     }

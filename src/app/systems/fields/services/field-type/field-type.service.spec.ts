@@ -1,24 +1,24 @@
 import { getModelToken } from '@nestjs/mongoose';
 import { Test, TestingModule } from '@nestjs/testing';
 import { Model } from 'mongoose';
-import Field from '../../entities/field.entity';
-import FindFieldService from './find-field.service';
+import FieldType from '../../entities/field-type.entity';
+import FieldTypeService from './field-type.service';
 
-describe('FindFieldService', () => {
-  let service: FindFieldService;
+describe('FieldTypeService', () => {
+  let service: FieldTypeService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
-        FindFieldService,
+        FieldTypeService,
         {
-          provide: getModelToken(Field.name),
+          provide: getModelToken(FieldType.name),
           useValue: Model,
         },
       ],
     }).compile();
 
-    service = module.get<FindFieldService>(FindFieldService);
+    service = module.get<FieldTypeService>(FieldTypeService);
   });
 
   it('should be defined', () => {

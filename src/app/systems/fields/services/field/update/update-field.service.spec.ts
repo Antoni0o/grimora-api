@@ -1,29 +1,31 @@
 import { getModelToken } from '@nestjs/mongoose';
 import { Test, TestingModule } from '@nestjs/testing';
 import { Model } from 'mongoose';
-import FieldType from '../../entities/field-type.entity';
-import Field from '../../entities/field.entity';
-import CreateFieldService from './create-field.service';
+import UpdateFieldService from './update-field.service';
+import Field from '../../../entities/field.entity';
+import FieldTypeService from '../../field-type/field-type.service';
 
-describe('CreateFieldService', () => {
-  let service: CreateFieldService;
+describe('UpdateFieldService', () => {
+  let service: UpdateFieldService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
-        CreateFieldService,
+        UpdateFieldService,
         {
           provide: getModelToken(Field.name),
           useValue: Model,
         },
         {
-          provide: getModelToken(FieldType.name),
-          useValue: Model,
+          provide: FieldTypeService,
+          useValue: {
+            find: jest.fn(),
+          },
         },
       ],
     }).compile();
 
-    service = module.get<CreateFieldService>(CreateFieldService);
+    service = module.get<UpdateFieldService>(UpdateFieldService);
   });
 
   it('should be defined', () => {

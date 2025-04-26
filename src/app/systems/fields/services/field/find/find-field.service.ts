@@ -1,9 +1,9 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import FindFieldDto from '../../dtos/find-field.dto';
 import { InjectModel } from '@nestjs/mongoose';
-import Field from '../../entities/field.entity';
 import { Model } from 'mongoose';
-import FieldType from '../../entities/field-type.entity';
+import FindFieldDto from '../../../dtos/find-field.dto';
+import FieldType from '../../../entities/field-type.entity';
+import Field from '../../../entities/field.entity';
 
 @Injectable()
 export default class FindFieldService {
