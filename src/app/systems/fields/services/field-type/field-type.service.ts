@@ -1,9 +1,12 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import FieldType from '../../entities/field-type.entity';
-import { Model } from 'mongoose';
+import { Document, Model, Types } from 'mongoose';
 import CreateFieldTypeDto from '../../dtos/create-field-type.dto';
 import UpdateFieldTypeDto from '../../dtos/update-field-type.dto';
+
+type MongooseFieldTypeModel = Document<unknown, object, FieldType> &
+  FieldType & { _id: Types.ObjectId } & { __v: number };
 
 @Injectable()
 export default class FieldTypeService {
@@ -41,7 +44,7 @@ export default class FieldTypeService {
     return new UpdateFieldTypeDto(fieldType);
   }
 
-  async find(fieldTypeId: string) {
+  async find(fieldTypeId: string): Promise<MongooseFieldTypeModel> {
     const fieldType = await this.fieldTypeModel.findById(fieldTypeId).exec();
 
     if (!fieldType) throw new NotFoundException(`Field Type with id: ${fieldTypeId} not found!`);

@@ -5,6 +5,7 @@ export type FieldTypeDocument = HydratedDocument<FieldType>;
 
 @Schema()
 export default class FieldType {
+  [x: string]: any;
   @Prop({ required: true })
   key!: string;
 

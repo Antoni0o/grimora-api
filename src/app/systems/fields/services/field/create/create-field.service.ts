@@ -15,9 +15,11 @@ export default class CreateFieldService {
   async create(request: CreateFieldDto): Promise<Field> {
     await this.fieldTypeService.find(request.typeId);
 
-    const newField = new this.fieldModel({
+    const fieldKey = this.createKey(request.name);
+
+    const newField = this.fieldModel.create({
       name: request.name,
-      key: this.createKey(request.name),
+      key: fieldKey,
       description: request.description ?? '',
       config: request.config ?? {},
       required: request.required ?? false,
@@ -26,7 +28,7 @@ export default class CreateFieldService {
       value: request.value ?? undefined,
     });
 
-    return newField.save();
+    return newField;
   }
 
   private createKey(name: string) {
