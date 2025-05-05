@@ -1,9 +1,17 @@
-import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsArray, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { Types } from 'mongoose';
 
 export default class CreateFieldDto {
+  @IsOptional()
+  _id?: Types.ObjectId;
+
   @IsString()
   @IsNotEmpty()
   name!: string;
+
+  @IsString()
+  @IsOptional()
+  key!: string;
 
   @IsString()
   @IsOptional()
@@ -24,6 +32,10 @@ export default class CreateFieldDto {
 
   @IsOptional()
   children?: CreateFieldDto[];
+
+  @IsOptional()
+  @IsArray()
+  childrenIds?: Types.ObjectId[];
 
   @IsOptional()
   value?: string | number;
