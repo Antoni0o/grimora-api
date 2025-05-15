@@ -9,9 +9,6 @@ export default class Field {
   @Prop({ type: String, required: true })
   public name!: string;
 
-  @Prop({ type: String, required: true })
-  public key!: string;
-
   @Prop({ type: String, required: false })
   public description!: string;
 
