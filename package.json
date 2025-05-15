@@ -88,6 +88,16 @@
     "collectCoverageFrom": [
       "**/*.(t|j)s"
     ],
+    "coveragePathIgnorePatterns": [
+      "node_modules",
+      "test-config",
+      "src/app/auth",
+      "src/app/email",
+      "jestGlobalMocks.ts",
+      "\\.module\\.ts",
+      "src/main.ts",
+      "\\.mock\\.ts"
+    ],
     "coverageDirectory": "../coverage",
     "testEnvironment": "node"
   }
