@@ -5,7 +5,7 @@ import { Document, Model, Types } from 'mongoose';
 import CreateFieldTypeDto from '../../dtos/create-field-type.dto';
 import UpdateFieldTypeDto from '../../dtos/update-field-type.dto';
 
-type MongooseFieldTypeModel = Document<unknown, object, FieldType> &
+export type MongooseFieldTypeModel = Document<unknown, object, FieldType> &
   FieldType & { _id: Types.ObjectId } & { __v: number };
 
 @Injectable()

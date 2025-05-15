@@ -7,12 +7,7 @@ import Field from '../../../entities/field.entity';
 import FieldTypeService from '../../field-type/field-type.service';
 import CreateFieldDto from '../../../dtos/create-field.dto';
 import FieldType from '../../../entities/field-type.entity';
-
-type MongooseFieldModel = Field & {
-  _id: Types.ObjectId;
-  type: string;
-  children: Array<string>;
-};
+import CreateFieldMapper from './mappers/create-field.mapper';
 
 describe('CreateFieldService', () => {
   let service: CreateFieldService;
@@ -35,6 +30,7 @@ describe('CreateFieldService', () => {
             find: jest.fn(),
           },
         },
+        CreateFieldMapper,
       ],
     }).compile();
 
@@ -52,125 +48,81 @@ describe('CreateFieldService', () => {
     // arrange
     const request = getRequest();
     const fieldType = getFieldType();
-    const field = <MongooseFieldModel>{
-      _id: new Types.ObjectId(),
-      name: request.name,
-      required: true,
-      type: fieldType._id.toString(),
-      value: request.value,
-    };
 
     (fieldTypeServiceMock.find as jest.Mock).mockResolvedValue(fieldType);
-    (fieldModelMock.create as jest.Mock).mockResolvedValue(field);
 
     // act
     const response = await service.create(request);
 
     // assert
-    expect(response.name).toBe(request.name);
+    expect(response[0].name).toBe(request.name);
+
     expect(fieldTypeServiceMock.find).toHaveBeenCalledWith(request.typeId);
     expect(fieldModelMock.create).toHaveBeenCalled();
   });
 
   it('should create field with children', async () => {
     // arrange
-    const childrenRequest = new CreateFieldDto();
-    childrenRequest.name = 'age';
-    childrenRequest.value = 20;
-    childrenRequest.typeId = 'typeId';
+    const childRequest = new CreateFieldDto();
+    childRequest.name = 'age';
+    childRequest.value = 20;
+    childRequest.typeId = 'typeId';
 
     const request = getRequest();
-    request.children = [childrenRequest];
+    request.children = [childRequest];
 
     const fieldType = getFieldType();
 
-    const children = <MongooseFieldModel>{
-      _id: new Types.ObjectId(),
-      name: childrenRequest.name,
-      required: true,
-      type: fieldType._id.toString(),
-      value: childrenRequest.value,
-    };
-
-    const field = <MongooseFieldModel>{
-      _id: new Types.ObjectId(),
-      name: request.name,
-      required: true,
-      type: fieldType._id.toString(),
-      value: request.value,
-      children: [children._id.toString()],
-    };
-
     (fieldTypeServiceMock.find as jest.Mock).mockResolvedValue(fieldType);
-    (fieldModelMock.create as jest.Mock).mockResolvedValueOnce(children).mockResolvedValueOnce(field);
 
     // act
     const response = await service.create(request);
 
     // assert
-    expect(response.name).toBe(request.name);
+    expect(response[0].name).toBe(childRequest.name);
+
+    expect(response[1].name).toBe(request.name);
+    expect(response[1].childrenIds).toStrictEqual([response[0]._id.toString()]);
+
     expect(fieldTypeServiceMock.find).toHaveBeenCalledWith(request.typeId);
 
-    expect(fieldModelMock.create).toHaveBeenCalledTimes(2);
+    expect(fieldModelMock.create).toHaveBeenCalledTimes(1);
   });
 
   it('should create field with a children with a grandchildren', async () => {
     // arrange
-    const grandChildrenRequest = new CreateFieldDto();
-    grandChildrenRequest.name = 'life';
-    grandChildrenRequest.value = 20;
-    grandChildrenRequest.typeId = 'typeId';
+    const grandChildRequest = new CreateFieldDto();
+    grandChildRequest.name = 'life';
+    grandChildRequest.value = 20;
+    grandChildRequest.typeId = 'typeId';
 
-    const childrenRequest = new CreateFieldDto();
-    childrenRequest.name = 'stats';
-    childrenRequest.typeId = 'typeId';
-    childrenRequest.children = [grandChildrenRequest];
+    const childRequest = new CreateFieldDto();
+    childRequest.name = 'stats';
+    childRequest.typeId = 'typeId';
+    childRequest.children = [grandChildRequest];
 
     const parentRequest = getRequest();
-    parentRequest.children = [childrenRequest];
+    parentRequest.children = [childRequest];
 
     const fieldType = getFieldType();
 
-    const grandChildren = <MongooseFieldModel>{
-      _id: new Types.ObjectId(),
-      name: grandChildrenRequest.name,
-      required: true,
-      type: fieldType._id.toString(),
-      value: grandChildrenRequest.value,
-    };
-
-    const children = <MongooseFieldModel>{
-      _id: new Types.ObjectId(),
-      name: childrenRequest.name,
-      required: true,
-      type: fieldType._id.toString(),
-      value: childrenRequest.value,
-      children: [grandChildren._id.toString()],
-    };
-
-    const field = <MongooseFieldModel>{
-      _id: new Types.ObjectId(),
-      name: parentRequest.name,
-      required: true,
-      type: fieldType._id.toString(),
-      value: parentRequest.value,
-      children: [children._id.toString()],
-    };
-
     (fieldTypeServiceMock.find as jest.Mock).mockResolvedValue(fieldType);
-    (fieldModelMock.create as jest.Mock)
-      .mockResolvedValueOnce(grandChildren)
-      .mockResolvedValueOnce(children)
-      .mockResolvedValueOnce(field);
-
     // act
     const response = await service.create(parentRequest);
 
     // assert
-    expect(response.name).toBe(parentRequest.name);
+    expect(response[0].name).toBe(grandChildRequest.name);
+
+    expect(response[1].name).toBe(childRequest.name);
+    expect(response[1].childrenIds).toStrictEqual([response[0]._id.toString()]);
+
+    expect(response[2].name).toBe(parentRequest.name);
+    expect(response[2].childrenIds).toStrictEqual([response[1]._id.toString()]);
+
+    expect(response.length).toEqual(3);
     expect(fieldTypeServiceMock.find).toHaveBeenCalledWith(parentRequest.typeId);
 
-    expect(fieldModelMock.create).toHaveBeenCalledTimes(3);
+    expect(fieldModelMock.create).toHaveBeenCalledTimes(1);
   });
 });
 
