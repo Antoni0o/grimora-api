@@ -9,9 +9,9 @@ import FindFieldService from './services/find/find-field.service';
 import UpdateFieldService from './services/update/update-field.service';
 
 @Module({
-  imports: [MongooseModule.forFeature([{ name: Field.name, schema: FieldSchema }])],
   controllers: [FieldsController],
-  providers: [CreateFieldService, FindFieldService, UpdateFieldService, DeleteFieldService, FieldTypeService],
-  exports: [CreateFieldService, FindFieldService, UpdateFieldService, DeleteFieldService, FieldTypeService],
+  providers: [CreateFieldService, FindFieldService, UpdateFieldService, DeleteFieldService],
+  imports: [MongooseModule.forFeature([{ name: Field.name, schema: FieldSchema }]), FieldTypeService],
+  exports: [CreateFieldService, FindFieldService, UpdateFieldService, DeleteFieldService],
 })
 export class FieldsModule {}
