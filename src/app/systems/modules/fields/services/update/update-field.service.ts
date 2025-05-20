@@ -1,20 +1,19 @@
-import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import FieldTypeService from '../../../field-types/field-type.service';
 import Field from '../../field.entity';
 import UpdateFieldDto from '../../dtos/update-field.dto';
+import UpdateFieldResponse from '../../models/update-field.response';
 
 @Injectable()
 export default class UpdateFieldService {
-  request?: UpdateFieldDto;
-
   constructor(
     @InjectModel(Field.name) private fieldModel: Model<Field>,
     @Inject(FieldTypeService) private fieldTypeService: FieldTypeService,
   ) {}
 
-  async update(fieldId: string, request: UpdateFieldDto) {
+  async update(fieldId: string, request: UpdateFieldDto): Promise<UpdateFieldResponse> {
     const field = await this.fieldModel.findById(fieldId).exec();
 
     if (!field) throw new NotFoundException(`Field with id: ${fieldId} not found!`);
@@ -22,11 +21,20 @@ export default class UpdateFieldService {
     await this.updateFieldData(field, request);
 
     await field.save();
+
+    return new UpdateFieldResponse(
+      field._id.toString(),
+      field.name,
+      field.description,
+      field.config,
+      field.type.key,
+      field.readonly,
+      field.required,
+      field.value,
+    );
   }
 
-  private async updateFieldData(field: Field, request: UpdateFieldDto) {
-    if (!request) throw new BadRequestException('Request not provided!');
-
+  private async updateFieldData(field: Field, request: UpdateFieldDto): Promise<void> {
     if (this.isNotNullOrEmpty(request.name)) field.name = request.name!;
 
     if (request.description) field.description = request.description!;

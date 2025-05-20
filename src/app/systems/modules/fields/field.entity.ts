@@ -15,8 +15,8 @@ export default class Field {
   @Prop({ type: Types.ObjectId, ref: 'FieldType', required: true })
   type!: FieldType;
 
-  @Prop({ type: Object, required: false })
-  public config!: object;
+  @Prop({ type: [Object], required: false })
+  public config!: Record<string, string>;
 
   @Prop({ type: Boolean, default: false })
   public required!: boolean;

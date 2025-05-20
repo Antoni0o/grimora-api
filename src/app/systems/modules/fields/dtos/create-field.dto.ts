@@ -1,10 +1,6 @@
 import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
-import { Types } from 'mongoose';
 
 export default class CreateFieldDto {
-  @IsOptional()
-  _id?: Types.ObjectId;
-
   @IsString()
   @IsNotEmpty()
   name!: string;
@@ -18,7 +14,7 @@ export default class CreateFieldDto {
   typeId!: string;
 
   @IsOptional()
-  config?: object;
+  config?: Record<string, string>;
 
   @IsOptional()
   required?: boolean;

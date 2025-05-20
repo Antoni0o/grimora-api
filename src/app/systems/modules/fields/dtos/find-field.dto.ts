@@ -15,7 +15,7 @@ export default class FindFieldDto {
   typeKey!: string;
 
   @IsOptional()
-  config?: object;
+  config?: Record<string, string>;
 
   @IsOptional()
   required?: boolean;

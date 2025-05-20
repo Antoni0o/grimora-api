@@ -1,9 +1,9 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Document, Model, Types } from 'mongoose';
-import CreateFieldTypeDto from '../fields/dtos/create-field-type.dto';
-import UpdateFieldTypeDto from '../fields/dtos/update-field-type.dto';
+import UpdateFieldTypeDto from './dtos/update-field-type.dto';
 import FieldType from './field-type.entity';
+import CreateFieldTypeDto from './dtos/create-field-type.dto';
 
 export type MongooseFieldTypeModel = Document<unknown, object, FieldType> &
   FieldType & { _id: Types.ObjectId } & { __v: number };

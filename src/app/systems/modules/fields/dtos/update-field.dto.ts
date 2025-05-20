@@ -14,7 +14,7 @@ export default class UpdateFieldDto {
   typeId?: string;
 
   @IsOptional()
-  config?: object;
+  config?: Record<string, string>;
 
   @IsOptional()
   required?: boolean;

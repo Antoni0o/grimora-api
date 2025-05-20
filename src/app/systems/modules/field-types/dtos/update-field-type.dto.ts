@@ -1,5 +1,5 @@
 import { IsBoolean, IsObject, IsOptional, IsString } from 'class-validator';
-import FieldType from '../../field-types/field-type.entity';
+import FieldType from '../field-type.entity';
 
 export default class UpdateFieldTypeDto {
   @IsString()
