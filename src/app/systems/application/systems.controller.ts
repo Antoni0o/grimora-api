@@ -1,5 +1,5 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
-import { SystemsService } from './systems.service';
+import { SystemsService } from '../systems.service';
 import { CreateSystemDto } from './dto/create/create-system.dto';
 import { UpdateSystemRequestDto } from './dto/update/update-system-request.dto';
 
