@@ -7,6 +7,10 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { UsersModule } from './app/users/users.module';
 import { EmailModule } from './app/email/email.module';
 import { AuthModule } from './app/auth/auth.module';
+import { FieldsModule } from './app/fields/fields.module';
+import { TemplatesModule } from './app/templates/templates.module';
+import { SheetsModule } from './app/sheets/sheets.module';
+import { ResourcesModule } from './app/resources/resources.module';
 import { SystemsModule } from './app/systems/systems.module';
 
 @Module({
@@ -37,7 +41,11 @@ import { SystemsModule } from './app/systems/systems.module';
     UsersModule,
     EmailModule,
     AuthModule,
+    FieldsModule,
+    TemplatesModule,
+    SheetsModule,
     SystemsModule,
+    ResourcesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
