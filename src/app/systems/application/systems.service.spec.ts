@@ -43,7 +43,7 @@ describe('SystemsService', () => {
   it('should create a system', async () => {
     // arrange
     const request = new CreateSystemDto(title, templateId, resourceIds, creatorId);
-    const createdSystem = new System('systemId', title, creatorId, resourceIds, templateId);
+    const createdSystem = new System('systemId', title, creatorId, templateId, resourceIds);
 
     jest.spyOn(repository, 'create').mockResolvedValue(createdSystem);
 

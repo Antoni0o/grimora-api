@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, InternalServerErrorException } from '@nestjs/common';
 import { SYSTEM_REPOSITORY } from '../domain/constants/system.constants';
 import { ISystemRepository } from '../domain/repositories/system.repository.interface';
 import { CreateSystemDto } from './dto/create-system.dto';
@@ -11,16 +11,18 @@ export class SystemsService {
   constructor(@Inject(SYSTEM_REPOSITORY) private readonly repository: ISystemRepository) {}
 
   async create(request: CreateSystemDto): Promise<SystemResponseDto> {
-    const system = new System('', request.title, request.creatorId, request.resourceIds, request.templateId);
+    const system = new System('', request.title, request.creatorId, request.templateId, request.resourceIds);
 
     const response = await this.repository.create(system);
 
+    if (!response) throw new InternalServerErrorException('Internal Error at RPG System creation. Try again, later.');
+
     return new SystemResponseDto(
-      response!.id,
-      response!.title,
-      response!.creatorId,
-      response!.templateId!,
-      response!.resourceIds,
+      response.id,
+      response.title,
+      response.creatorId,
+      response.templateId,
+      response.resourceIds,
     );
   }
 
