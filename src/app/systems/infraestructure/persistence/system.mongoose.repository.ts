@@ -44,10 +44,18 @@ export class SystemRepository implements ISystemRepository {
   async update(id: string, system: Partial<System>): Promise<System | null> {
     if (!Types.ObjectId.isValid(id)) return null;
 
-    const updatedSystem = await this.systemModel.findByIdAndUpdate(id, system, { new: true }).exec();
+    const systemToUpdate = await this.systemModel.findById(id).exec();
 
-    if (!updatedSystem) return null;
+    if (!systemToUpdate) return null;
 
+    if (this.isNotNullUndefinedOrEmpty(system.title)) systemToUpdate.title = system.title!;
+
+    if (this.isNotNullOrUndefined(system.resourceIds)) {
+      const resources = system.resourceIds.map(resource => SystemMapper.toObjectId(resource));
+      systemToUpdate.resources = resources;
+    }
+
+    const updatedSystem = await systemToUpdate.save();
     return SystemMapper.toDomain(updatedSystem);
   }
 
@@ -59,5 +67,13 @@ export class SystemRepository implements ISystemRepository {
     if (!deletedSystem) return false;
 
     return true;
+  }
+
+  private isNotNullUndefinedOrEmpty(value?: string) {
+    return this.isNotNullOrUndefined(value) && value !== '';
+  }
+
+  private isNotNullOrUndefined(value?: string | string[]) {
+    return value !== null && value !== undefined;
   }
 }

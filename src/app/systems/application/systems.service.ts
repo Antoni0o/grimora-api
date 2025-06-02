@@ -17,13 +17,7 @@ export class SystemsService {
 
     if (!response) throw new InternalServerErrorException('Internal Error at RPG System creation. Try again, later.');
 
-    return new SystemResponseDto(
-      response.id,
-      response.title,
-      response.creatorId,
-      response.templateId,
-      response.resourceIds,
-    );
+    return this.mapToDto(response);
   }
 
   findAll() {
@@ -40,5 +34,15 @@ export class SystemsService {
 
   remove(id: number) {
     return `This action removes a #${id} system`;
+  }
+
+  private mapToDto(response: System): SystemResponseDto | PromiseLike<SystemResponseDto> {
+    return new SystemResponseDto(
+      response.id,
+      response.title,
+      response.creatorId,
+      response.templateId,
+      response.resourceIds,
+    );
   }
 }
