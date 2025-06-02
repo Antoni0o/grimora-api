@@ -4,6 +4,7 @@ import { SYSTEM_REPOSITORY } from '../domain/constants/system.constants';
 import { ISystemRepository } from '../domain/repositories/system.repository.interface';
 import { CreateSystemDto } from './dto/create-system.dto';
 import { System } from '../domain/entities/system.entity';
+import { InternalServerErrorException } from '@nestjs/common';
 
 describe('SystemsService', () => {
   let service: SystemsService;
@@ -54,6 +55,22 @@ describe('SystemsService', () => {
     expect(repository.create).toHaveBeenCalledWith(
       expect.objectContaining({ title, templateId, resourceIds, creatorId }),
     );
-    expect(response).toBe(expect.objectContaining({ id: createdSystem.id }));
+    expect(response).toStrictEqual(expect.objectContaining({ id: createdSystem.id }));
+  });
+
+  it('should not create a system if repository fails', async () => {
+    // arrange
+    const request = new CreateSystemDto(title, templateId, resourceIds, creatorId);
+
+    jest.spyOn(repository, 'create').mockResolvedValue(null);
+
+    // act
+    await expect(service.create(request)).rejects.toThrow(InternalServerErrorException);
+
+    // assert
+    // eslint-disable-next-line @typescript-eslint/unbound-method
+    expect(repository.create).toHaveBeenCalledWith(
+      expect.objectContaining({ title, templateId, resourceIds, creatorId }),
+    );
   });
 });
