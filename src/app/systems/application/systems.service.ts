@@ -1,14 +1,15 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { UpdateSystemRequestDto } from './dto/update/update-system-request.dto';
 import { SYSTEM_REPOSITORY } from '../domain/constants/system.constants';
 import { ISystemRepository } from '../domain/repositories/system.repository.interface';
-import { CreateSystemRequestDto } from './dto/create/create-system-request.dto';
+import { CreateSystemDto } from './dto/create-system.dto';
+import { SystemResponseDto } from './dto/system-response.dto';
+import { UpdateSystemRequestDto } from './dto/update-system.dto';
 
 @Injectable()
 export class SystemsService {
   constructor(@Inject(SYSTEM_REPOSITORY) private readonly systemRepository: ISystemRepository) {}
 
-  create(request: CreateSystemRequestDto) {
+  create(request: CreateSystemDto): Promise<SystemResponseDto> {
     return 'This action adds a new system';
   }
 

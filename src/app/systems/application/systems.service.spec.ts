@@ -1,18 +1,59 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { SystemsService } from './systems.service';
+import { SYSTEM_REPOSITORY } from '../domain/constants/system.constants';
+import { ISystemRepository } from '../domain/repositories/system.repository.interface';
+import { CreateSystemDto } from './dto/create-system.dto';
+import { System } from '../domain/entities/system.entity';
 
 describe('SystemsService', () => {
   let service: SystemsService;
+  let repository: ISystemRepository;
+
+  const resourceIds = [];
+  const templateId = 'templateUUID';
+  const creatorId = 'creatorUUID';
+  const title = 'new rpg system';
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [SystemsService],
+      providers: [
+        SystemsService,
+        {
+          provide: SYSTEM_REPOSITORY,
+          useValue: <ISystemRepository>{
+            findAll: jest.fn(),
+            findById: jest.fn(),
+            create: jest.fn(),
+            delete: jest.fn(),
+            update: jest.fn(),
+          },
+        },
+      ],
     }).compile();
 
     service = module.get<SystemsService>(SystemsService);
+    repository = module.get<ISystemRepository>(SYSTEM_REPOSITORY);
   });
 
   it('should be defined', () => {
     expect(service).toBeDefined();
+  });
+
+  it('should create a system', async () => {
+    // arrange
+    const request = new CreateSystemDto(title, templateId, resourceIds, creatorId);
+    const createdSystem = new System('systemId', title, creatorId, resourceIds, templateId);
+
+    jest.spyOn(repository, 'create').mockResolvedValue(createdSystem);
+
+    // act
+    const response = await service.create(request);
+
+    // assert
+    // eslint-disable-next-line @typescript-eslint/unbound-method
+    expect(repository.create).toHaveBeenCalledWith(
+      expect.objectContaining({ title, templateId, resourceIds, creatorId }),
+    );
+    expect(response).toBe(expect.objectContaining({ id: createdSystem.id }));
   });
 });
