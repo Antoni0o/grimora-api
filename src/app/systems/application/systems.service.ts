@@ -4,13 +4,24 @@ import { ISystemRepository } from '../domain/repositories/system.repository.inte
 import { CreateSystemDto } from './dto/create-system.dto';
 import { SystemResponseDto } from './dto/system-response.dto';
 import { UpdateSystemRequestDto } from './dto/update-system.dto';
+import { System } from '../domain/entities/system.entity';
 
 @Injectable()
 export class SystemsService {
-  constructor(@Inject(SYSTEM_REPOSITORY) private readonly systemRepository: ISystemRepository) {}
+  constructor(@Inject(SYSTEM_REPOSITORY) private readonly repository: ISystemRepository) {}
 
-  create(request: CreateSystemDto): Promise<SystemResponseDto> {
-    return 'This action adds a new system';
+  async create(request: CreateSystemDto): Promise<SystemResponseDto> {
+    const system = new System('', request.title, request.creatorId, request.resourceIds, request.templateId);
+
+    const response = await this.repository.create(system);
+
+    return new SystemResponseDto(
+      response!.id,
+      response!.title,
+      response!.creatorId,
+      response!.templateId!,
+      response!.resourceIds,
+    );
   }
 
   findAll() {
