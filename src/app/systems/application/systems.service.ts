@@ -36,8 +36,19 @@ export class SystemsService {
     return this.mapToDto(system);
   }
 
-  update(id: string, request: UpdateSystemDto) {
-    return `This action updates a #${id} system`;
+  async update(id: string, request: UpdateSystemDto) {
+    const system = await this.repository.findById(id);
+
+    if (!system) throw new NotFoundException('System not found!');
+
+    system.resourceIds = request.resourceIds;
+    system.title = request.title;
+
+    const response = await this.repository.update(id, system);
+
+    if (!response) throw new InternalServerErrorException('Internal Error at RPG System update. Try again, later.');
+
+    return this.mapToDto(response);
   }
 
   remove(id: number) {

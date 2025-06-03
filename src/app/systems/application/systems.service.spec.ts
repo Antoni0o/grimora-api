@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/unbound-method */
 import { Test, TestingModule } from '@nestjs/testing';
 import { SystemsService } from './systems.service';
 import { SYSTEM_REPOSITORY } from '../domain/constants/system.constants';
@@ -53,7 +54,6 @@ describe('SystemsService', () => {
     const response = await service.create(request);
 
     // assert
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(repository.create).toHaveBeenCalledWith(
       expect.objectContaining({ title, templateId, resourceIds, creatorId }),
     );
@@ -70,7 +70,6 @@ describe('SystemsService', () => {
     await expect(service.create(request)).rejects.toThrow(InternalServerErrorException);
 
     // assert
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(repository.create).toHaveBeenCalledWith(
       expect.objectContaining({ title, templateId, resourceIds, creatorId }),
     );
@@ -98,7 +97,6 @@ describe('SystemsService', () => {
     await expect(service.findAll()).rejects.toThrow(InternalServerErrorException);
 
     // assert
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(repository.findAll).toHaveBeenCalled();
   });
 
@@ -123,7 +121,6 @@ describe('SystemsService', () => {
     await expect(service.findOne('not-found-id')).rejects.toThrow(NotFoundException);
 
     // assert
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(repository.findById).toHaveBeenCalled();
   });
 
@@ -133,19 +130,39 @@ describe('SystemsService', () => {
     request.title = 'new title';
     request.resourceIds = [uuid()];
 
+    const systemToUpdate = new System('systemId', title, creatorId, templateId, resourceIds);
     const updatedSystem = new System('systemId', request.title, creatorId, templateId, request.resourceIds);
 
+    jest.spyOn(repository, 'findById').mockResolvedValue(systemToUpdate);
     jest.spyOn(repository, 'update').mockResolvedValue(updatedSystem);
 
     // act
     const response = await service.update('systemId', request);
 
     // assert
-    // eslint-disable-next-line @typescript-eslint/unbound-method
+    expect(repository.findById).toHaveBeenCalledWith(updatedSystem.id);
     expect(repository.update).toHaveBeenCalledWith(
+      updatedSystem.id,
       expect.objectContaining({ title: request.title, resourceIds: request.resourceIds }),
     );
     expect(response).toStrictEqual(expect.objectContaining({ id: updatedSystem.id }));
+  });
+
+  it('should not update if system is not found', async () => {
+    // arrange
+    const request = new UpdateSystemDto();
+    request.title = 'new title';
+    request.resourceIds = [uuid()];
+
+    jest.spyOn(repository, 'findById').mockResolvedValue(null);
+    jest.spyOn(repository, 'update').mockResolvedValue(null);
+
+    // act
+    await expect(service.update('unexistent-id', request)).rejects.toThrow(NotFoundException);
+
+    // assert
+    expect(repository.findById).toHaveBeenCalledWith('unexistent-id');
+    expect(repository.update).not.toHaveBeenCalled();
   });
 
   it('should not update a system if repository fails', async () => {
@@ -153,15 +170,18 @@ describe('SystemsService', () => {
     const request = new UpdateSystemDto();
     request.title = 'new title';
     request.resourceIds = [uuid()];
+    const systemToUpdate = new System('systemId', title, creatorId, templateId, resourceIds);
 
+    jest.spyOn(repository, 'findById').mockResolvedValue(systemToUpdate);
     jest.spyOn(repository, 'update').mockResolvedValue(null);
 
     // act
-    await expect(service.update('not-unexistent-id', request)).rejects.toThrow(InternalServerErrorException);
+    await expect(service.update('unexistent-id', request)).rejects.toThrow(InternalServerErrorException);
 
     // assert
-    // eslint-disable-next-line @typescript-eslint/unbound-method
+    expect(repository.findById).toHaveBeenCalledWith('unexistent-id');
     expect(repository.update).toHaveBeenCalledWith(
+      'unexistent-id',
       expect.objectContaining({ title: request.title, resourceIds: request.resourceIds }),
     );
   });
