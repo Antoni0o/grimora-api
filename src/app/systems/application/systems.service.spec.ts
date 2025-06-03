@@ -5,6 +5,8 @@ import { ISystemRepository } from '../domain/repositories/system.repository.inte
 import { CreateSystemDto } from './dto/create-system.dto';
 import { System } from '../domain/entities/system.entity';
 import { InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { UpdateSystemDto } from './dto/update-system.dto';
+import { v4 as uuid } from 'uuid';
 
 describe('SystemsService', () => {
   let service: SystemsService;
@@ -123,5 +125,44 @@ describe('SystemsService', () => {
     // assert
     // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(repository.findById).toHaveBeenCalled();
+  });
+
+  it('should update a system', async () => {
+    // arrange
+    const request = new UpdateSystemDto();
+    request.title = 'new title';
+    request.resourceIds = [uuid()];
+
+    const updatedSystem = new System('systemId', request.title, creatorId, templateId, request.resourceIds);
+
+    jest.spyOn(repository, 'update').mockResolvedValue(updatedSystem);
+
+    // act
+    const response = await service.update('systemId', request);
+
+    // assert
+    // eslint-disable-next-line @typescript-eslint/unbound-method
+    expect(repository.update).toHaveBeenCalledWith(
+      expect.objectContaining({ title: request.title, resourceIds: request.resourceIds }),
+    );
+    expect(response).toStrictEqual(expect.objectContaining({ id: updatedSystem.id }));
+  });
+
+  it('should not update a system if repository fails', async () => {
+    // arrange
+    const request = new UpdateSystemDto();
+    request.title = 'new title';
+    request.resourceIds = [uuid()];
+
+    jest.spyOn(repository, 'update').mockResolvedValue(null);
+
+    // act
+    await expect(service.update('not-unexistent-id', request)).rejects.toThrow(InternalServerErrorException);
+
+    // assert
+    // eslint-disable-next-line @typescript-eslint/unbound-method
+    expect(repository.update).toHaveBeenCalledWith(
+      expect.objectContaining({ title: request.title, resourceIds: request.resourceIds }),
+    );
   });
 });

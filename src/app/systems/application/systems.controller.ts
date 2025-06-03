@@ -2,11 +2,11 @@ import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/commo
 
 import { CreateSystemDto } from './dto/create-system.dto';
 import { SystemsService } from './systems.service';
-import { UpdateSystemRequestDto } from './dto/update-system.dto';
+import { UpdateSystemDto } from './dto/update-system.dto';
 
 @Controller('systems')
 export class SystemsController {
-  constructor(private readonly systemsService: SystemsService) {}
+  constructor(private readonly systemsService: SystemsService) { }
 
   @Post()
   create(@Body() request: CreateSystemDto) {
@@ -24,7 +24,7 @@ export class SystemsController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() request: UpdateSystemRequestDto) {
+  update(@Param('id') id: string, @Body() request: UpdateSystemDto) {
     return this.systemsService.update(+id, request);
   }
 
