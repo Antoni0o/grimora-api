@@ -20,8 +20,12 @@ export class SystemsService {
     return this.mapToDto(response);
   }
 
-  findAll(): Promise<SystemResponseDto[]> {
-    return [];
+  async findAll(): Promise<SystemResponseDto[]> {
+    const systems = await this.repository.findAll();
+
+    if (!systems) throw new InternalServerErrorException('Internal Error at RPG Systems search. Try again, later.');
+
+    return systems.map(system => this.mapToDto(system));
   }
 
   findOne(id: number) {
@@ -36,7 +40,7 @@ export class SystemsService {
     return `This action removes a #${id} system`;
   }
 
-  private mapToDto(response: System): SystemResponseDto | PromiseLike<SystemResponseDto> {
+  private mapToDto(response: System): SystemResponseDto {
     return new SystemResponseDto(
       response.id,
       response.title,
