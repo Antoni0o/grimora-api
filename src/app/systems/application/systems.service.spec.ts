@@ -73,4 +73,30 @@ describe('SystemsService', () => {
       expect.objectContaining({ title, templateId, resourceIds, creatorId }),
     );
   });
+
+  it('should find all systems', async () => {
+    // arrange
+    const system = new System('systemId', title, creatorId, templateId, resourceIds);
+
+    jest.spyOn(repository, 'findAll').mockResolvedValue([system]);
+
+    // act
+    const response = await service.findAll();
+
+    // assert
+    expect(response.length).toBe(1);
+    expect(response.at(0)?.id).toBe(system.id);
+  });
+
+  it('should not find all systems if repository fails', async () => {
+    // arrange
+    jest.spyOn(repository, 'findAll').mockResolvedValue(null);
+
+    // act
+    await expect(service.findAll()).rejects.toThrow(InternalServerErrorException);
+
+    // assert
+    // eslint-disable-next-line @typescript-eslint/unbound-method
+    expect(repository.findAll).toHaveBeenCalled();
+  });
 });

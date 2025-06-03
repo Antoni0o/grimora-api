@@ -20,8 +20,8 @@ export class SystemsService {
     return this.mapToDto(response);
   }
 
-  findAll() {
-    return `This action returns all systems`;
+  findAll(): Promise<SystemResponseDto[]> {
+    return [];
   }
 
   findOne(id: number) {
