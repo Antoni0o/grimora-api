@@ -4,7 +4,7 @@ import { SYSTEM_REPOSITORY } from '../domain/constants/system.constants';
 import { ISystemRepository } from '../domain/repositories/system.repository.interface';
 import { CreateSystemDto } from './dto/create-system.dto';
 import { System } from '../domain/entities/system.entity';
-import { InternalServerErrorException } from '@nestjs/common';
+import { InternalServerErrorException, NotFoundException } from '@nestjs/common';
 
 describe('SystemsService', () => {
   let service: SystemsService;
@@ -98,5 +98,30 @@ describe('SystemsService', () => {
     // assert
     // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(repository.findAll).toHaveBeenCalled();
+  });
+
+  it('should find system by id', async () => {
+    // arrange
+    const system = new System('systemId', title, creatorId, templateId, resourceIds);
+
+    jest.spyOn(repository, 'findById').mockResolvedValue(system);
+
+    // act
+    const response = await service.findOne(system.id);
+
+    // assert
+    expect(response.id).toBe(system.id);
+  });
+
+  it('should not find system by id if repository returns null', async () => {
+    // arrange
+    jest.spyOn(repository, 'findById').mockResolvedValue(null);
+
+    // act
+    await expect(service.findAll()).rejects.toThrow(NotFoundException);
+
+    // assert
+    // eslint-disable-next-line @typescript-eslint/unbound-method
+    expect(repository.findById).toHaveBeenCalled();
   });
 });
