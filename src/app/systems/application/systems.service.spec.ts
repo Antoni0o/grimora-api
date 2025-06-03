@@ -118,7 +118,7 @@ describe('SystemsService', () => {
     jest.spyOn(repository, 'findById').mockResolvedValue(null);
 
     // act
-    await expect(service.findAll()).rejects.toThrow(NotFoundException);
+    await expect(service.findOne('not-found-id')).rejects.toThrow(NotFoundException);
 
     // assert
     // eslint-disable-next-line @typescript-eslint/unbound-method
