@@ -30,6 +30,6 @@ export class SystemsController {
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.systemsService.remove(+id);
+    return this.systemsService.delete(+id);
   }
 }

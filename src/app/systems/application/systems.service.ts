@@ -36,7 +36,7 @@ export class SystemsService {
     return this.mapToDto(system);
   }
 
-  async update(id: string, request: UpdateSystemDto) {
+  async update(id: string, request: UpdateSystemDto): Promise<SystemResponseDto> {
     const system = await this.repository.findById(id);
 
     if (!system) throw new NotFoundException('System not found!');
@@ -51,8 +51,16 @@ export class SystemsService {
     return this.mapToDto(response);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} system`;
+  async delete(id: string): Promise<boolean> {
+    const system = await this.repository.findById(id);
+
+    if (!system) throw new NotFoundException('System not found!');
+
+    const response = await this.repository.delete(id);
+
+    if (!response) throw new InternalServerErrorException('Internal Error at RPG System deletion. Try again, later.');
+
+    return response;
   }
 
   private mapToDto(response: System): SystemResponseDto {

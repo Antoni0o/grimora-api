@@ -60,7 +60,7 @@ describe('SystemsService', () => {
     expect(response).toStrictEqual(expect.objectContaining({ id: createdSystem.id }));
   });
 
-  it('should not create a system if repository fails', async () => {
+  it('should not create a system when repository fails', async () => {
     // arrange
     const request = new CreateSystemDto(title, templateId, resourceIds, creatorId);
 
@@ -89,7 +89,7 @@ describe('SystemsService', () => {
     expect(response.at(0)?.id).toBe(system.id);
   });
 
-  it('should not find all systems if repository fails', async () => {
+  it('should not find all systems when repository fails', async () => {
     // arrange
     jest.spyOn(repository, 'findAll').mockResolvedValue(null);
 
@@ -113,7 +113,7 @@ describe('SystemsService', () => {
     expect(response.id).toBe(system.id);
   });
 
-  it('should not find system by id if repository returns null', async () => {
+  it('should not find system by id when repository returns null', async () => {
     // arrange
     jest.spyOn(repository, 'findById').mockResolvedValue(null);
 
@@ -148,7 +148,7 @@ describe('SystemsService', () => {
     expect(response).toStrictEqual(expect.objectContaining({ id: updatedSystem.id }));
   });
 
-  it('should not update if system is not found', async () => {
+  it('should not update when system is not found', async () => {
     // arrange
     const request = new UpdateSystemDto();
     request.title = 'new title';
@@ -165,7 +165,7 @@ describe('SystemsService', () => {
     expect(repository.update).not.toHaveBeenCalled();
   });
 
-  it('should not update a system if repository fails', async () => {
+  it('should not update a system when repository fails', async () => {
     // arrange
     const request = new UpdateSystemDto();
     request.title = 'new title';
@@ -184,5 +184,48 @@ describe('SystemsService', () => {
       'unexistent-id',
       expect.objectContaining({ title: request.title, resourceIds: request.resourceIds }),
     );
+  });
+
+  it('should delete a system', async () => {
+    // arrange
+    const systemToDelete = new System('systemId', title, creatorId, templateId, resourceIds);
+
+    jest.spyOn(repository, 'findById').mockResolvedValue(systemToDelete);
+    jest.spyOn(repository, 'delete').mockResolvedValue(true);
+
+    // act
+    const response = await service.delete('systemId');
+
+    // assert
+    expect(repository.findById).toHaveBeenCalledWith('systemId');
+    expect(repository.delete).toHaveBeenCalledWith('systemId');
+    expect(response).toBe(true);
+  });
+
+  it('should not delete when system is not found', async () => {
+    // arrange
+    jest.spyOn(repository, 'findById').mockResolvedValue(null);
+
+    // act
+    await expect(service.delete('systemId')).rejects.toThrow(NotFoundException);
+
+    // assert
+    expect(repository.findById).toHaveBeenCalled();
+    expect(repository.delete).not.toHaveBeenCalled();
+  });
+
+  it('should not delete system when repository fails', async () => {
+    // arrange
+    const systemToDelete = new System('systemId', title, creatorId, templateId, resourceIds);
+
+    jest.spyOn(repository, 'findById').mockResolvedValue(systemToDelete);
+    jest.spyOn(repository, 'delete').mockResolvedValue(false);
+
+    // act
+    await expect(service.delete('systemId')).rejects.toThrow(InternalServerErrorException);
+
+    // assert
+    expect(repository.findById).toHaveBeenCalledWith('systemId');
+    expect(repository.delete).toHaveBeenCalledWith('systemId');
   });
 });
