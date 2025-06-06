@@ -97,7 +97,8 @@
       "jestGlobalMocks.ts",
       "\\.module\\.ts",
       "src/main.ts",
-      "\\.mock\\.ts"
+      "\\.mock\\.ts",
+      "/infraestructure/"
     ],
     "coverageDirectory": "../coverage",
     "testEnvironment": "node"
