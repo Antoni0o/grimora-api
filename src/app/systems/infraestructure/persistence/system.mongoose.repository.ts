@@ -8,7 +8,7 @@ import { SystemMapper } from './system.mapper';
 
 @Injectable()
 export class SystemRepository implements ISystemRepository {
-  constructor(@InjectModel(SystemMongoSchema.name) private readonly systemModel: Model<SystemDocument>) {}
+  constructor(@InjectModel(SystemMongoSchema.name) private readonly systemModel: Model<SystemDocument>) { }
 
   async findById(id: string): Promise<System | null> {
     if (!Types.ObjectId.isValid(id)) return null;
@@ -41,22 +41,19 @@ export class SystemRepository implements ISystemRepository {
     return SystemMapper.toDomain(createdSystem);
   }
 
-  async update(id: string, system: Partial<System>): Promise<System | null> {
+  async update(id: string, system: System): Promise<System | null> {
     if (!Types.ObjectId.isValid(id)) return null;
 
-    const systemToUpdate = await this.systemModel.findById(id).exec();
+    const systemToUpdate = await this.systemModel
+      .findByIdAndUpdate(id, {
+        title: system.title,
+        resources: system.resourceIds,
+      })
+      .exec();
 
     if (!systemToUpdate) return null;
 
-    if (this.isNotNullUndefinedOrEmpty(system.title)) systemToUpdate.title = system.title!;
-
-    if (this.isNotNullOrUndefined(system.resourceIds)) {
-      const resources = system.resourceIds.map(resource => SystemMapper.toObjectId(resource));
-      systemToUpdate.resources = resources;
-    }
-
-    const updatedSystem = await systemToUpdate.save();
-    return SystemMapper.toDomain(updatedSystem);
+    return SystemMapper.toDomain(systemToUpdate);
   }
 
   async delete(id: string): Promise<boolean> {
