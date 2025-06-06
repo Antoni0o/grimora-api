@@ -20,16 +20,16 @@ export class SystemsController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.systemsService.findOne(+id);
+    return this.systemsService.findOne(id);
   }
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() request: UpdateSystemDto) {
-    return this.systemsService.update(+id, request);
+    return this.systemsService.update(id, request);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.systemsService.delete(+id);
+    return this.systemsService.delete(id);
   }
 }

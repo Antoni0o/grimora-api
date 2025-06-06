@@ -17,6 +17,7 @@ describe('SystemsService', () => {
   const templateId = 'templateUUID';
   const creatorId = 'creatorUUID';
   const title = 'new rpg system';
+  const systemId = uuid();
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -46,7 +47,7 @@ describe('SystemsService', () => {
   it('should create a system', async () => {
     // arrange
     const request = new CreateSystemDto(title, templateId, resourceIds, creatorId);
-    const createdSystem = new System('systemId', title, creatorId, templateId, resourceIds);
+    const createdSystem = new System(systemId, title, creatorId, templateId, resourceIds);
 
     jest.spyOn(repository, 'create').mockResolvedValue(createdSystem);
 
@@ -77,7 +78,7 @@ describe('SystemsService', () => {
 
   it('should find all systems', async () => {
     // arrange
-    const system = new System('systemId', title, creatorId, templateId, resourceIds);
+    const system = new System(systemId, title, creatorId, templateId, resourceIds);
 
     jest.spyOn(repository, 'findAll').mockResolvedValue([system]);
 
@@ -102,7 +103,7 @@ describe('SystemsService', () => {
 
   it('should find system by id', async () => {
     // arrange
-    const system = new System('systemId', title, creatorId, templateId, resourceIds);
+    const system = new System(systemId, title, creatorId, templateId, resourceIds);
 
     jest.spyOn(repository, 'findById').mockResolvedValue(system);
 
@@ -130,14 +131,14 @@ describe('SystemsService', () => {
     request.title = 'new title';
     request.resourceIds = [uuid()];
 
-    const systemToUpdate = new System('systemId', title, creatorId, templateId, resourceIds);
-    const updatedSystem = new System('systemId', request.title, creatorId, templateId, request.resourceIds);
+    const systemToUpdate = new System(systemId, title, creatorId, templateId, resourceIds);
+    const updatedSystem = new System(systemId, request.title, creatorId, templateId, request.resourceIds);
 
     jest.spyOn(repository, 'findById').mockResolvedValue(systemToUpdate);
     jest.spyOn(repository, 'update').mockResolvedValue(updatedSystem);
 
     // act
-    const response = await service.update('systemId', request);
+    const response = await service.update(systemId, request);
 
     // assert
     expect(repository.findById).toHaveBeenCalledWith(updatedSystem.id);
@@ -170,7 +171,7 @@ describe('SystemsService', () => {
     const request = new UpdateSystemDto();
     request.title = 'new title';
     request.resourceIds = [uuid()];
-    const systemToUpdate = new System('systemId', title, creatorId, templateId, resourceIds);
+    const systemToUpdate = new System(systemId, title, creatorId, templateId, resourceIds);
 
     jest.spyOn(repository, 'findById').mockResolvedValue(systemToUpdate);
     jest.spyOn(repository, 'update').mockResolvedValue(null);
@@ -188,17 +189,17 @@ describe('SystemsService', () => {
 
   it('should delete a system', async () => {
     // arrange
-    const systemToDelete = new System('systemId', title, creatorId, templateId, resourceIds);
+    const systemToDelete = new System(systemId, title, creatorId, templateId, resourceIds);
 
     jest.spyOn(repository, 'findById').mockResolvedValue(systemToDelete);
     jest.spyOn(repository, 'delete').mockResolvedValue(true);
 
     // act
-    const response = await service.delete('systemId');
+    const response = await service.delete(systemId);
 
     // assert
-    expect(repository.findById).toHaveBeenCalledWith('systemId');
-    expect(repository.delete).toHaveBeenCalledWith('systemId');
+    expect(repository.findById).toHaveBeenCalledWith(systemId);
+    expect(repository.delete).toHaveBeenCalledWith(systemId);
     expect(response).toBe(true);
   });
 
@@ -207,7 +208,7 @@ describe('SystemsService', () => {
     jest.spyOn(repository, 'findById').mockResolvedValue(null);
 
     // act
-    await expect(service.delete('systemId')).rejects.toThrow(NotFoundException);
+    await expect(service.delete(systemId)).rejects.toThrow(NotFoundException);
 
     // assert
     expect(repository.findById).toHaveBeenCalled();
@@ -216,16 +217,16 @@ describe('SystemsService', () => {
 
   it('should not delete system when repository fails', async () => {
     // arrange
-    const systemToDelete = new System('systemId', title, creatorId, templateId, resourceIds);
+    const systemToDelete = new System(systemId, title, creatorId, templateId, resourceIds);
 
     jest.spyOn(repository, 'findById').mockResolvedValue(systemToDelete);
     jest.spyOn(repository, 'delete').mockResolvedValue(false);
 
     // act
-    await expect(service.delete('systemId')).rejects.toThrow(InternalServerErrorException);
+    await expect(service.delete(systemId)).rejects.toThrow(InternalServerErrorException);
 
     // assert
-    expect(repository.findById).toHaveBeenCalledWith('systemId');
-    expect(repository.delete).toHaveBeenCalledWith('systemId');
+    expect(repository.findById).toHaveBeenCalledWith(systemId);
+    expect(repository.delete).toHaveBeenCalledWith(systemId);
   });
 });
