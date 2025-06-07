@@ -7,17 +7,24 @@ import { getModelToken } from '@nestjs/mongoose';
 import { SystemMongoSchema, SystemSchema } from '../infraestructure/persistence/system.schema';
 import { connect, Connection, Model } from 'mongoose';
 import { MongoMemoryServer } from 'mongodb-memory-server';
+import { CreateSystemDto } from './dto/create-system.dto';
+import { UpdateSystemDto } from './dto/update-system.dto';
+import { NotFoundException } from '@nestjs/common';
+import { v4 as uuid } from 'uuid';
+import { Types } from 'mongoose';
+import JwtPayloadModel from 'src/app/auth/models/jwt-payload.model';
+import { JwtAuthGuard } from 'src/app/auth/guard/jwt-auth.guard';
 
 describe('SystemsController', () => {
   let controller: SystemsController;
+  let service: SystemsService;
   let mongod: MongoMemoryServer;
   let mongoConnection: Connection;
   let systemModel: Model<SystemMongoSchema>;
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     mongod = await MongoMemoryServer.create();
     const uri = mongod.getUri();
-
     mongoConnection = (await connect(uri)).connection;
     systemModel = mongoConnection.model(SystemMongoSchema.name, SystemSchema);
 
@@ -29,11 +36,20 @@ describe('SystemsController', () => {
           provide: SYSTEM_REPOSITORY,
           useClass: SystemRepository,
         },
-        { provide: getModelToken(SystemMongoSchema.name), useValue: systemModel },
+        {
+          provide: getModelToken(SystemMongoSchema.name),
+          useValue: systemModel
+        },
       ],
-    }).compile();
+    })
+      .overrideGuard(JwtAuthGuard)
+      .useValue({
+        canActivate: jest.fn().mockReturnValue(true),
+      })
+      .compile();
 
     controller = module.get<SystemsController>(SystemsController);
+    service = module.get<SystemsService>(SystemsService);
   });
 
   afterEach(async () => {
@@ -44,7 +60,122 @@ describe('SystemsController', () => {
     }
   });
 
+  afterAll(async () => {
+    await mongoConnection.dropDatabase();
+    await mongoConnection.close();
+    await mongod.stop();
+  });
+
   it('should be defined', () => {
     expect(controller).toBeDefined();
+    expect(service).toBeDefined();
   });
+
+  describe('create', () => {
+    it('should create a new system', async () => {
+      const createSystemDto: CreateSystemDto = { title: 'Test System', templateId: new Types.ObjectId().toHexString(), resourceIds: [new Types.ObjectId().toHexString()], creatorId: uuid() };
+      const reqUser: JwtPayloadModel = { sub: uuid(), email: 'fake@mail.com', refreshToken: 'refresh-token' };
+      const createdSystem = await controller.create(createSystemDto, reqUser);
+
+      expect(createdSystem).toBeDefined();
+      expect(createdSystem.title).toEqual(createSystemDto.title);
+      expect(createdSystem.templateId).toEqual(createSystemDto.templateId);
+      expect(createdSystem.id).toBeDefined();
+
+      const foundSystem = await systemModel.findById(createdSystem.id);
+      expect(foundSystem).toBeDefined();
+      expect(foundSystem?.title).toEqual(createSystemDto.title);
+    });
+  });
+
+
+  describe('findAll', () => {
+    it('should return an array of systems', async () => {
+      const system1 = await createSystem('system 1');
+      const system2 = await createSystem('system 2');
+
+      const systems = await controller.findAll();
+
+      expect(systems).toBeDefined();
+      expect(systems.length).toEqual(2);
+      expect(systems[0].title).toEqual(system1.title);
+      expect(systems[1].title).toEqual(system2.title);
+    });
+
+    it('should return an empty array if no systems exist', async () => {
+      const systems = await controller.findAll();
+      expect(systems).toBeDefined();
+      expect(systems.length).toEqual(0);
+    });
+  });
+
+
+  describe('findOne', () => {
+    it('should return a single system by id', async () => {
+      const createdSystem = await createSystem('system 1');
+      const foundSystem = await controller.findOne(createdSystem.id);
+
+      expect(foundSystem).toBeDefined();
+      expect(foundSystem.id).toEqual(createdSystem.id);
+      expect(foundSystem.title).toEqual(createdSystem.title);
+    });
+
+    it('should throw NotFoundException if system is not found', async () => {
+      const nonExistentId = new Types.ObjectId().toHexString();
+      await expect(controller.findOne(nonExistentId)).rejects.toThrow(NotFoundException);
+    });
+
+    it('should throw NotFoundException if an invalid id is provided', async () => {
+      const invalidId = 'invalid-mongo-id';
+      await expect(controller.findOne(invalidId)).rejects.toThrow(NotFoundException);
+    });
+  });
+
+
+  describe('update', () => {
+    it('should update an existing system', async () => {
+      const createdSystem = await createSystem('system 1');
+      const updateSystemDto: UpdateSystemDto = { title: 'New Name', resourceIds: [new Types.ObjectId().toHexString()] };
+
+      const updatedSystem = await controller.update(createdSystem.id, updateSystemDto);
+
+      expect(updatedSystem).toBeDefined();
+      expect(updatedSystem.id).toEqual(createdSystem.id);
+      expect(updatedSystem.title).toEqual(updateSystemDto.title);
+      expect(updatedSystem.resourceIds).toEqual(updateSystemDto.resourceIds);
+
+      const foundSystem = await systemModel.findById(createdSystem.id);
+      expect(foundSystem?.title).toEqual(updateSystemDto.title);
+    });
+
+    it('should throw NotFoundException if system to update is not found', async () => {
+      const nonExistentId = new Types.ObjectId().toHexString();
+      const updateSystemDto: UpdateSystemDto = { title: 'New Name', resourceIds: [] };
+      await expect(controller.update(nonExistentId, updateSystemDto)).rejects.toThrow(NotFoundException);
+    });
+  });
+
+
+  describe('remove', () => {
+    it('should remove an existing system', async () => {
+      const createdSystem = await createSystem('system 1');
+
+      await controller.remove(createdSystem.id);
+
+      const foundSystem = await systemModel.findById(createdSystem.id);
+      expect(foundSystem).toBeNull();
+    });
+
+    it('should throw NotFoundException if system to remove is not found', async () => {
+      const nonExistentId = new Types.ObjectId().toHexString();
+      await expect(controller.remove(nonExistentId)).rejects.toThrow(NotFoundException);
+    });
+  });
+
+  async function createSystem(title: string) {
+    return await controller.create(
+      { title, creatorId: '', templateId: new Types.ObjectId().toHexString(), resourceIds: [] },
+      { sub: uuid(), email: 'fake@mail.com', refreshToken: 'refresh-token' }
+    );
+  }
 });

@@ -48,7 +48,9 @@ export class SystemRepository implements ISystemRepository {
       .findByIdAndUpdate(id, {
         title: system.title,
         resources: system.resourceIds,
-      })
+      },
+        { new: true, runValidators: true }
+      )
       .exec();
 
     if (!systemToUpdate) return null;

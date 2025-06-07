@@ -5,9 +5,13 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { SystemMongoSchema, SystemSchema } from './infraestructure/persistence/system.schema';
 import { SYSTEM_REPOSITORY } from './domain/constants/system.constants';
 import { SystemRepository } from './infraestructure/persistence/system.mongoose.repository';
+import { AuthModule } from '../auth/auth.module';
 
 @Module({
-  imports: [MongooseModule.forFeature([{ name: SystemMongoSchema.name, schema: SystemSchema }])],
+  imports: [
+    MongooseModule.forFeature([{ name: SystemMongoSchema.name, schema: SystemSchema }]),
+    AuthModule
+  ],
   controllers: [SystemsController],
   providers: [
     SystemsService,
@@ -17,4 +21,4 @@ import { SystemRepository } from './infraestructure/persistence/system.mongoose.
     },
   ],
 })
-export class SystemsModule {}
+export class SystemsModule { }
