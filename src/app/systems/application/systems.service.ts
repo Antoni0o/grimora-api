@@ -1,10 +1,14 @@
-import { Inject, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { SYSTEM_REPOSITORY } from '../domain/constants/system.constants';
 import { ISystemRepository } from '../domain/repositories/system.repository.interface';
 import { CreateSystemDto } from './dto/create-system.dto';
 import { SystemResponseDto } from './dto/system-response.dto';
 import { UpdateSystemDto } from './dto/update-system.dto';
 import { System } from '../domain/entities/system.entity';
+
+const INTERNAL_SERVER_ERROR_MESSAGE = 'Internal Error at RPG System creation. Try again, later.';
+const BAD_REQUEST_MESSAGE = 'Requester is not the Creator.';
+const NOT_FOUND_MESSAGE = 'System not found.';
 
 @Injectable()
 export class SystemsService {
@@ -15,7 +19,7 @@ export class SystemsService {
 
     const response = await this.repository.create(system);
 
-    if (!response) throw new InternalServerErrorException('Internal Error at RPG System creation. Try again, later.');
+    if (!response) throw new InternalServerErrorException(INTERNAL_SERVER_ERROR_MESSAGE);
 
     return this.mapToDto(response);
   }
@@ -23,7 +27,7 @@ export class SystemsService {
   async findAll(): Promise<SystemResponseDto[]> {
     const systems = await this.repository.findAll();
 
-    if (!systems) throw new InternalServerErrorException('Internal Error at RPG Systems search. Try again, later.');
+    if (!systems) throw new InternalServerErrorException(INTERNAL_SERVER_ERROR_MESSAGE);
 
     return systems.map(system => this.mapToDto(system));
   }
@@ -31,7 +35,7 @@ export class SystemsService {
   async findOne(id: string): Promise<SystemResponseDto> {
     const system = await this.repository.findById(id);
 
-    if (!system) throw new NotFoundException(`System with id: ${id}, not found!`);
+    if (!system) throw new NotFoundException(NOT_FOUND_MESSAGE);
 
     return this.mapToDto(system);
   }
@@ -39,26 +43,30 @@ export class SystemsService {
   async update(id: string, request: UpdateSystemDto): Promise<SystemResponseDto> {
     const system = await this.repository.findById(id);
 
-    if (!system) throw new NotFoundException('System not found!');
+    if (!system) throw new NotFoundException(NOT_FOUND_MESSAGE);
+
+    if (request.userId !== system?.creatorId) throw new BadRequestException(BAD_REQUEST_MESSAGE);
 
     system.resourceIds = request.resourceIds;
     system.title = request.title;
 
     const response = await this.repository.update(id, system);
 
-    if (!response) throw new InternalServerErrorException('Internal Error at RPG System update. Try again, later.');
+    if (!response) throw new InternalServerErrorException(INTERNAL_SERVER_ERROR_MESSAGE);
 
     return this.mapToDto(response);
   }
 
-  async delete(id: string): Promise<boolean> {
+  async delete(id: string, userId: string): Promise<boolean> {
     const system = await this.repository.findById(id);
 
-    if (!system) throw new NotFoundException('System not found!');
+    if (!system) throw new NotFoundException(NOT_FOUND_MESSAGE);
+
+    if (userId !== system?.creatorId) throw new BadRequestException(BAD_REQUEST_MESSAGE);
 
     const response = await this.repository.delete(id);
 
-    if (!response) throw new InternalServerErrorException('Internal Error at RPG System deletion. Try again, later.');
+    if (!response) throw new InternalServerErrorException(INTERNAL_SERVER_ERROR_MESSAGE);
 
     return response;
   }

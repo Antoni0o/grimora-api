@@ -5,7 +5,6 @@ import { SystemsService } from './systems.service';
 import { UpdateSystemDto } from './dto/update-system.dto';
 import { JwtAuthGuard } from 'src/app/auth/guard/jwt-auth.guard';
 import { User } from 'src/app/auth/decorators/user.decorator';
-import JwtPayloadModel from 'src/app/auth/models/jwt-payload.model';
 
 @UseGuards(JwtAuthGuard)
 @Controller('systems')
@@ -15,9 +14,9 @@ export class SystemsController {
   @Post()
   create(
     @Body() request: CreateSystemDto,
-    @User() user: JwtPayloadModel
+    @User('sub') userId: string
   ) {
-    request.creatorId = user.sub;
+    request.creatorId = userId;
 
     return this.systemsService.create(request);
   }
@@ -38,7 +37,7 @@ export class SystemsController {
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.systemsService.delete(id);
+  delete(@Param('id') id: string, @User('sub') userId: string) {
+    return this.systemsService.delete(id, userId);
   }
 }

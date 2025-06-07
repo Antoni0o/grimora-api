@@ -12,7 +12,6 @@ import { UpdateSystemDto } from './dto/update-system.dto';
 import { NotFoundException } from '@nestjs/common';
 import { v4 as uuid } from 'uuid';
 import { Types } from 'mongoose';
-import JwtPayloadModel from 'src/app/auth/models/jwt-payload.model';
 import { JwtAuthGuard } from 'src/app/auth/guard/jwt-auth.guard';
 
 describe('SystemsController', () => {
@@ -74,8 +73,8 @@ describe('SystemsController', () => {
   describe('create', () => {
     it('should create a new system', async () => {
       const createSystemDto: CreateSystemDto = { title: 'Test System', templateId: new Types.ObjectId().toHexString(), resourceIds: [new Types.ObjectId().toHexString()], creatorId: uuid() };
-      const reqUser: JwtPayloadModel = { sub: uuid(), email: 'fake@mail.com', refreshToken: 'refresh-token' };
-      const createdSystem = await controller.create(createSystemDto, reqUser);
+      const userId = uuid()
+      const createdSystem = await controller.create(createSystemDto, userId);
 
       expect(createdSystem).toBeDefined();
       expect(createdSystem.title).toEqual(createSystemDto.title);
@@ -134,8 +133,9 @@ describe('SystemsController', () => {
 
   describe('update', () => {
     it('should update an existing system', async () => {
-      const createdSystem = await createSystem('system 1');
-      const updateSystemDto: UpdateSystemDto = { title: 'New Name', resourceIds: [new Types.ObjectId().toHexString()] };
+      const userId = uuid();
+      const createdSystem = await createSystem('system 1', userId);
+      const updateSystemDto: UpdateSystemDto = { title: 'New Name', resourceIds: [new Types.ObjectId().toHexString()], userId: userId };
 
       const updatedSystem = await controller.update(createdSystem.id, updateSystemDto);
 
@@ -158,9 +158,10 @@ describe('SystemsController', () => {
 
   describe('remove', () => {
     it('should remove an existing system', async () => {
-      const createdSystem = await createSystem('system 1');
+      const userId = uuid();
+      const createdSystem = await createSystem('system 1', userId);
 
-      await controller.remove(createdSystem.id);
+      await controller.delete(createdSystem.id, userId);
 
       const foundSystem = await systemModel.findById(createdSystem.id);
       expect(foundSystem).toBeNull();
@@ -168,14 +169,16 @@ describe('SystemsController', () => {
 
     it('should throw NotFoundException if system to remove is not found', async () => {
       const nonExistentId = new Types.ObjectId().toHexString();
-      await expect(controller.remove(nonExistentId)).rejects.toThrow(NotFoundException);
+      const userId = uuid();
+
+      await expect(controller.delete(nonExistentId, userId)).rejects.toThrow(NotFoundException);
     });
   });
 
-  async function createSystem(title: string) {
+  async function createSystem(title: string, userId?: string) {
     return await controller.create(
       { title, creatorId: '', templateId: new Types.ObjectId().toHexString(), resourceIds: [] },
-      { sub: uuid(), email: 'fake@mail.com', refreshToken: 'refresh-token' }
+      userId ?? uuid()
     );
   }
 });

@@ -5,12 +5,10 @@ export class CreateSystemDto {
   @IsNotEmpty()
   title: string;
 
-  @IsUUID()
   @IsNotEmpty()
   templateId: string;
 
   @IsArray()
-  @IsUUID()
   resourceIds: string[];
 
   @IsString()
