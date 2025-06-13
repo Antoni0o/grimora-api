@@ -1,13 +1,14 @@
 import { FieldType } from "../../enums/field-type.enum";
+import { FieldData } from "../../interfaces/field.interface";
 import { Field } from "./field.entity";
 
 export class KeyValueField extends Field {
     key: string;
     value: string;
 
-    constructor(id: string, title: string, key: string, value: string) {
-        super(id, title, FieldType.KEYVALUE);
-        this.key = key;
-        this.value = value;
+    constructor(data: FieldData) {
+        super(data, FieldType.KEYVALUE);
+        this.key = data.key || '';
+        this.value = data.value || '';
     }
 }

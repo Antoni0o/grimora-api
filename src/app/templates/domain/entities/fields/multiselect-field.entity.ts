@@ -1,11 +1,12 @@
 import { FieldType } from "../../enums/field-type.enum";
+import { FieldData } from "../../interfaces/field.interface";
 import { Field } from "./field.entity";
 
 export class MultiselectField extends Field {
     resourceId: string;
 
-    constructor(id: string, title: string, resourceId: string) {
-        super(id, title, FieldType.MULTISELECT);
-        this.resourceId = resourceId;
+    constructor(data: FieldData) {
+        super(data, FieldType.MULTISELECT);
+        this.resourceId = data.resourceId || '';
     }
 }

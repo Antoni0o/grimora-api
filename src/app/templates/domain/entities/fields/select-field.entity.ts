@@ -1,11 +1,12 @@
 import { FieldType } from "../../enums/field-type.enum";
+import { FieldData } from "../../interfaces/field.interface";
 import { Field } from "./field.entity";
 
 export class SelectField extends Field {
     resourceId: string;
 
-    constructor(id: string, title: string, resourceId: string) {
-        super(id, title, FieldType.SELECT);
-        this.resourceId = resourceId;
+    constructor(data: FieldData) {
+        super(data, FieldType.SELECT);
+        this.resourceId = data.resourceId || '';
     }
 }
