@@ -11,12 +11,24 @@ export class FieldFactory {
 
         const fieldInstance = new fieldClass(data);
 
-        if (fieldInstance instanceof GroupField && (data.fields && data.fields.length > 0)) {
-            fieldInstance.fields = data.fields.map(childFieldData => {
-                return FieldFactory.create(childFieldData);
-            })
-        }
+        FieldFactory.createGroupChilds(fieldInstance, data);
 
         return fieldInstance;
+    }
+
+    private static createGroupChilds(fieldInstance: Field, data: FieldData) {
+        if (FieldFactory.isGroupField(fieldInstance) && FieldFactory.hasChildFields(data)) {
+            fieldInstance.fields = data.fields!.map(childFieldData => {
+                return FieldFactory.create(childFieldData);
+            });
+        }
+    }
+
+    private static isGroupField(fieldInstance: Field) {
+        return fieldInstance instanceof GroupField;
+    }
+
+    private static hasChildFields(data: FieldData) {
+        return data.fields && data.fields.length > 0;
     }
 }

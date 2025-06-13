@@ -19,7 +19,7 @@ describe('FieldFactory', () => {
         expect(field).toBeDefined();
 
         expect(field.id).toBe('1');
-        expect(field.title).toBe('Test Field');
+        expect(field.title).toBe(fieldData.title);
         expect(field.type).toBe(FieldType.NUMBER);
 
         expect(field).toBeInstanceOf(NumberField);
