@@ -1,5 +1,5 @@
 import { Types } from 'mongoose';
-import { System } from '../../domain/entities/system.entity';
+import { System } from '../domain/entities/system.entity';
 import { SystemDocument } from './system.schema';
 
 export class SystemMapper {

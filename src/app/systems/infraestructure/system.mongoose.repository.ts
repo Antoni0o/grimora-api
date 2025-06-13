@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
-import { System } from '../../domain/entities/system.entity';
-import { ISystemRepository } from '../../domain/repositories/system.repository.interface';
+import { System } from '../domain/entities/system.entity';
+import { ISystemRepository } from '../domain/repositories/system.repository.interface';
 import { SystemDocument, SystemMongoSchema } from './system.schema';
 import { SystemMapper } from './system.mapper';
 

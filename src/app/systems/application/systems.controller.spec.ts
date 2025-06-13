@@ -1,10 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { SystemsController } from './systems.controller';
 import { SystemsService } from './systems.service';
-import { SystemRepository } from '../infraestructure/persistence/system.mongoose.repository';
+import { SystemRepository } from '../infraestructure/system.mongoose.repository';
 import { SYSTEM_REPOSITORY } from '../domain/constants/system.constants';
 import { getModelToken } from '@nestjs/mongoose';
-import { SystemMongoSchema, SystemSchema } from '../infraestructure/persistence/system.schema';
+import { SystemMongoSchema, SystemSchema } from '../infraestructure/system.schema';
 import { connect, Connection, Model } from 'mongoose';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { CreateSystemDto } from './dto/create-system.dto';

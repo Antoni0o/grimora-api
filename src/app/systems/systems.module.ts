@@ -2,9 +2,9 @@ import { Module } from '@nestjs/common';
 import { SystemsService } from './application/systems.service';
 import { SystemsController } from './application/systems.controller';
 import { MongooseModule } from '@nestjs/mongoose';
-import { SystemMongoSchema, SystemSchema } from './infraestructure/persistence/system.schema';
+import { SystemMongoSchema, SystemSchema } from './infraestructure/system.schema';
 import { SYSTEM_REPOSITORY } from './domain/constants/system.constants';
-import { SystemRepository } from './infraestructure/persistence/system.mongoose.repository';
+import { SystemRepository } from './infraestructure/system.mongoose.repository';
 import { AuthModule } from '../auth/auth.module';
 
 @Module({
