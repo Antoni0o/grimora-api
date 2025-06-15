@@ -1,37 +1,25 @@
-import { IsArray, IsEnum, IsMongoId, IsNotEmpty, IsString } from "class-validator";
 import { FieldType } from "../../domain/enums/field-type.enum";
 
-export class CreateFieldDto {
-  @IsString()
-  @IsNotEmpty()
-  title: string;
-
-  @IsString()
-  @IsEnum(FieldType)
+export class FieldResponseDto {
+  id: string;
+  name: string;
   type: FieldType;
-
-  @IsArray()
-  fields?: CreateFieldDto[];
-
-  @IsString()
+  fields?: FieldResponseDto[];
   key?: string;
-
-  @IsString()
   value?: string;
-
-  @IsString()
-  @IsMongoId()
   resourceId?: string;
 
   constructor(
-    title: string,
+    id: string,
+    name: string,
     type: FieldType,
-    fields?: CreateFieldDto[],
+    fields: FieldResponseDto[] = [],
     key?: string,
     value?: string,
     resourceId?: string
   ) {
-    this.title = title;
+    this.id = id;
+    this.name = name;
     this.type = type;
     this.fields = fields;
     this.key = key;

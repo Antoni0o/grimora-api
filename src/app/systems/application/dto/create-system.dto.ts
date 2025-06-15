@@ -1,4 +1,4 @@
-import { IsArray, IsNotEmpty, IsString, IsUUID } from 'class-validator';
+import { IsArray, IsMongoId, IsNotEmpty, IsString, IsUUID } from 'class-validator';
 
 export class CreateSystemDto {
   @IsString()
@@ -6,9 +6,11 @@ export class CreateSystemDto {
   title: string;
 
   @IsNotEmpty()
+  @IsMongoId()
   templateId: string;
 
   @IsArray()
+  @IsMongoId({ each: true })
   resourceIds: string[];
 
   @IsString()
