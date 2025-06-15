@@ -21,7 +21,7 @@ export class SystemRepository implements ISystemRepository {
   }
 
   async findAll(): Promise<System[] | null> {
-    const systems = await this.systemModel.find();
+    const systems = await this.systemModel.find().exec();
 
     if (!systems) return null;
 
@@ -66,13 +66,5 @@ export class SystemRepository implements ISystemRepository {
     if (!deletedSystem) return false;
 
     return true;
-  }
-
-  private isNotNullUndefinedOrEmpty(value?: string) {
-    return this.isNotNullOrUndefined(value) && value !== '';
-  }
-
-  private isNotNullOrUndefined(value?: string | string[]) {
-    return value !== null && value !== undefined;
   }
 }
