@@ -1,4 +1,4 @@
-import { Inject, Injectable, InternalServerErrorException } from '@nestjs/common';
+import { Inject, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { CreateTemplateDto } from './dto/create-template.dto';
 import { UpdateTemplateDto } from './dto/update-template.dto';
 import { TEMPLATE_REPOSITORY } from '../domain/constants/template.constants';
@@ -29,12 +29,20 @@ export class TemplatesService {
     return this.mapToDto(response);
   }
 
-  findAll() {
-    return `This action returns all templates`;
+  async findAll(): Promise<TemplateResponseDto[]> {
+    const response = await this.repository.findAll();
+    
+    if (!response) throw new InternalServerErrorException(INTERNAL_SERVER_ERROR_MESSAGE);
+
+    return response.map(template => this.mapToDto(template));
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} template`;
+  async findOne(id: string): Promise<TemplateResponseDto> {
+    const response = await this.repository.findById(id);
+
+    if (!response) throw new NotFoundException(NOT_FOUND_MESSAGE);
+
+    return this.mapToDto(response);
   }
 
   update(id: number, updateTemplateDto: UpdateTemplateDto) {
