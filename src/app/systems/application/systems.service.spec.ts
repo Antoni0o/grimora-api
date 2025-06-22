@@ -8,6 +8,7 @@ import { System } from '../domain/entities/system.entity';
 import { BadRequestException, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { UpdateSystemDto } from './dto/update-system.dto';
 import { v4 as uuid } from 'uuid';
+import { Types } from 'mongoose';
 
 describe('SystemsService', () => {
   let service: SystemsService;
@@ -17,7 +18,7 @@ describe('SystemsService', () => {
   const templateId = 'templateUUID';
   const creatorId = 'creatorUUID';
   const title = 'new rpg system';
-  const systemId = uuid();
+  const systemId = new Types.ObjectId().toHexString();
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({

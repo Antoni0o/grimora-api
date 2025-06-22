@@ -2,7 +2,7 @@ import { FieldType } from "../../domain/enums/field-type.enum";
 
 export class FieldResponseDto {
   id: string;
-  name: string;
+  title: string;
   type: FieldType;
   fields?: FieldResponseDto[];
   key?: string;
@@ -11,7 +11,7 @@ export class FieldResponseDto {
 
   constructor(
     id: string,
-    name: string,
+    title: string,
     type: FieldType,
     fields: FieldResponseDto[] = [],
     key?: string,
@@ -19,7 +19,7 @@ export class FieldResponseDto {
     resourceId?: string
   ) {
     this.id = id;
-    this.name = name;
+    this.title = title;
     this.type = type;
     this.fields = fields;
     this.key = key;

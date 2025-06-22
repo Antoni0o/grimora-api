@@ -1,0 +1,92 @@
+{
+  "template": {
+    "id": "template-id",
+    "name": "Example Template",
+    "fields": [
+      {
+        "type": "group",
+        "name": "info-field",
+        "fields": [
+          {
+            "type": "TEXT",
+            "name": "Name",
+            "id": "name-field-id"
+          },
+          {
+            "type": "NUMBER",
+            "name": "Age",
+            "id": "age-field-id"
+          },
+          {
+            "type": "SELECT",
+            "name": "Class",
+            "resource": "classes-id",
+            "id": "class-field-id"
+          },
+          {
+            "type": "MULTISELECT",
+            "name": "Spells",
+            "resource": "spells-id",
+            "id": "spell-field-id"
+          }
+        ]
+      }
+    ]
+  },
+  "sheet": {
+    "id": "sheet-id",
+    "name": "Antonio DnD Sheet",
+    "ownerId": "antonio-id",
+    "templateId": "template-id",
+    "values": {
+      "name-field-id": "Antonio",
+      "age-field-id": 30,
+      "class-field-id": "wizard-id",
+      "spell-field-id": ["fireball-id", "lightning-bold-id"]
+    }
+  },
+  "system": {
+    "id": "system-id",
+    "name": "DnD 5e",
+    "creator-id": "antonio-id",
+    "template": "template-id",
+    "resources": [
+      {
+        "id": "classes-id",
+        "name": "Classes",
+        "items": [
+          { "id": "wizard-id", "name": "Wizard" },
+          { "id": "fighter-id", "name": "Fighter" }
+        ]
+      },
+      {
+        "id": "spells-id",
+        "name": "Spells",
+        "items": [
+          {
+            "id": "fireball-id",
+            "name": "Fireball",
+            "level": 3,
+            "description": "A bright streak flashes from your pointing finger to a point you choose within range and then blossoms with a low roar into an explosion of flame.",
+            "castingTime": "1 action",
+            "range": "150 feet",
+            "components": ["V", "S", "M"],
+            "material": "A tiny ball of bat guano and sulfur",
+            "duration": "Instantaneous"
+          },
+          {
+            "id": "lightning-bold-id",
+            "name": "Lightning Bolt",
+            "level": 3,
+            "description": "A stroke of lightning forming a line 100 feet long and 5 feet wide blasts out from you in a direction you choose.",
+            "castingTime": "1 action",
+            "range": "100 feet",
+            "components": ["V", "S", "M"],
+            "material": "A bit of fur and a rod of amber, crystal, or glass",
+            "duration": "Instantaneous"
+          }
+        ]
+      }
+    ]
+  }
+}
