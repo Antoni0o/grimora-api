@@ -11,10 +11,14 @@ import { Template } from '../domain/entities/template.entity';
 import { Field } from '../domain/entities/fields/field.entity';
 import { FieldFactory } from '../domain/factories/field.factory';
 import { TemplateResponseDto } from './dto/template-response.dto';
+import { InternalServerErrorException } from '@nestjs/common';
 
 describe('TemplatesService', () => {
   let service: TemplatesService;
   let repository: ITemplateRepository
+
+  const templateTitle = "DnD Template";
+  const fieldTitle = "Name Field";
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -61,21 +65,17 @@ describe('TemplatesService', () => {
     const response = await service.create(request);
 
     // assert
-    expect(response).toStrictEqual({
-      id: template.id,
-      title: request.title,
-      fields: [
-        {
-          id: template.fields[0].id,
-          title: fieldDto.title,
-          type: fieldDto.type,
-          key: undefined,
-          value: undefined,
-          resourceId: undefined,
-          fields: []
-        } as FieldResponseDto
+    expect(response).toStrictEqual(new TemplateResponseDto(
+      template.id,
+      request.title,
+      [
+        new FieldResponseDto(
+          template.fields[0].id,
+          fieldDto.title,
+          fieldDto.type
+        )
       ]
-    } as TemplateResponseDto);
+    ));
 
     expect(repository.create).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -87,5 +87,28 @@ describe('TemplatesService', () => {
         ])
       })
     )
-  })
+  });
+
+  it('should not create a template when repository fails', async () => {
+    // arrange
+    const fieldDto = new CreateFieldDto(fieldTitle, FieldType.NUMBER);
+    const request = new CreateTemplateDto(templateTitle, [fieldDto]);
+
+    jest.spyOn(repository, 'create').mockResolvedValue(null);
+
+    // act
+    await expect(service.create(request)).rejects.toThrow(InternalServerErrorException);
+
+    // assert
+    expect(repository.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        title: templateTitle, fields: expect.arrayContaining([
+          expect.objectContaining({
+            title: fieldDto.title,
+            type: fieldDto.type,
+          })
+        ])
+      }),
+    );
+  });
 });
