@@ -1,5 +1,5 @@
 import { IsArray, IsNotEmpty, IsString } from "class-validator";
-import { CreateFieldDto } from "./create-field.dto";
+import { FieldRequestDto } from "./field-request.dto";
 
 export class CreateTemplateDto {
   @IsNotEmpty()
@@ -8,9 +8,9 @@ export class CreateTemplateDto {
 
   @IsNotEmpty()
   @IsArray()
-  fields: CreateFieldDto[];
+  fields: FieldRequestDto[];
 
-  constructor(title: string, fields: CreateFieldDto[]) {
+  constructor(title: string, fields: FieldRequestDto[]) {
     this.title = title;
     this.fields = fields;
   }

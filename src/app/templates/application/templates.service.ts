@@ -7,7 +7,7 @@ import { Template } from '../domain/entities/template.entity';
 import { FieldFactory } from '../domain/factories/field.factory';
 import { FieldData } from '../domain/interfaces/field.interface';
 import { Field } from '../domain/entities/fields/field.entity';
-import { CreateFieldDto } from './dto/create-field.dto';
+import { FieldRequestDto } from './dto/field-request.dto';
 import { TemplateResponseDto } from './dto/template-response.dto';
 import { FieldResponseDto } from './dto/field-response.dto';
 
@@ -20,7 +20,7 @@ export class TemplatesService {
   constructor(@Inject(TEMPLATE_REPOSITORY) private readonly repository: ITemplateRepository) { }
 
   async create(request: CreateTemplateDto): Promise<TemplateResponseDto> {
-    const template = new Template('', request.title, this.mapFields(request));
+    const template = new Template('', request.title, this.mapFields(request.fields));
 
     const response = await this.repository.create(template);
 
@@ -45,31 +45,42 @@ export class TemplatesService {
     return this.mapToDto(response);
   }
 
-  update(id: number, updateTemplateDto: UpdateTemplateDto) {
-    return `This action updates a #${id} template`;
+  async update(id: string, request: UpdateTemplateDto): Promise<TemplateResponseDto> {
+    const template = await this.repository.findById(id);
+
+    if (!template) throw new NotFoundException(NOT_FOUND_MESSAGE);
+
+    template.title = request.title || template.title;
+    template.fields = request.fields ?  this.mapFields(request.fields) : template.fields;
+
+    const response = await this.repository.update(id,template);
+
+    if (!response) throw new InternalServerErrorException(INTERNAL_SERVER_ERROR_MESSAGE);
+
+    return response;
   }
 
-  remove(id: number) {
+  delete(id: number) {
     return `This action removes a #${id} template`;
   }
 
-  private mapFields(request: CreateTemplateDto): Field[] {
-    return request.fields.map(field => {
-      const fieldData: FieldData = this.mapFieldData(field);
+  private mapFields(fields: FieldRequestDto[]): Field[] {
+    return fields.map(field => {
+      const fieldData: FieldData = this.mapToFieldData(field);
 
       return FieldFactory.create(fieldData);
     });
   }
 
-  private mapFieldData(field: CreateFieldDto): FieldData {
+  private mapToFieldData(field: FieldRequestDto): FieldData {
     return {
-      id: '',
+      id: field.id || '' ,
       title: field.title,
       type: field.type,
       key: field.key,
       value: field.value,
       resourceId: field.resourceId,
-      fields: field.fields ? field.fields.map(child => this.mapFieldData(child)) : undefined
+      fields: field.fields ? field.fields.map(child => this.mapToFieldData(child)) : undefined
     };
   }
 

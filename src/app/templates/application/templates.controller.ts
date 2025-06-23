@@ -29,6 +29,6 @@ export class TemplatesController {
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.templatesService.remove(+id);
+    return this.templatesService.delete(+id);
   }
 }

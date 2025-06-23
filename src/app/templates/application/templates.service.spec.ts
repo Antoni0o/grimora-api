@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { TemplatesService } from './templates.service';
 import { CreateTemplateDto } from './dto/create-template.dto';
-import { CreateFieldDto } from './dto/create-field.dto';
+import { FieldRequestDto } from './dto/field-request.dto';
 import { FieldType } from '../domain/enums/field-type.enum';
 import { TEMPLATE_REPOSITORY } from '../domain/constants/template.constants';
 import { ITemplateRepository } from '../domain/repositories/template.repository';
@@ -13,6 +13,9 @@ import { FieldFactory } from '../domain/factories/field.factory';
 import { TemplateResponseDto } from './dto/template-response.dto';
 import { InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { create } from 'domain';
+import { UpdateTemplateDto } from './dto/update-template.dto';
+import { createTracing } from 'trace_events';
+import { NumberField } from '../domain/entities/fields/number-field.entity';
 
 describe('TemplatesService', () => {
   let service: TemplatesService;
@@ -49,7 +52,7 @@ describe('TemplatesService', () => {
 
   it('should create a template', async () => {
     // arrange
-    const fieldDto = new CreateFieldDto(fieldTitle, FieldType.TEXT);
+    const fieldDto = new FieldRequestDto(fieldTitle, FieldType.TEXT);
     const request = new CreateTemplateDto(templateTitle, [fieldDto]);
 
     const template = createTemplate(templateId, templateTitle)
@@ -86,7 +89,7 @@ describe('TemplatesService', () => {
 
   it('should not create a template when repository fails', async () => {
     // arrange
-    const fieldDto = new CreateFieldDto(fieldTitle, FieldType.NUMBER);
+    const fieldDto = new FieldRequestDto(fieldTitle, FieldType.NUMBER);
     const request = new CreateTemplateDto(templateTitle, [fieldDto]);
 
     jest.spyOn(repository, 'create').mockResolvedValue(null);
@@ -141,7 +144,7 @@ describe('TemplatesService', () => {
     expect(repository.findAll).toHaveBeenCalledTimes(1);
   });
 
-  it('should find system by id', async () => {
+  it('should find template by id', async () => {
       // arrange
       const template = createTemplate(templateId, templateTitle) ;
   
@@ -154,7 +157,7 @@ describe('TemplatesService', () => {
       expect(response.id).toBe(template.id);
     });
   
-    it('should not find system by id when repository returns null', async () => {
+    it('should not find template by id when repository returns null', async () => {
       // arrange
       jest.spyOn(repository, 'findById').mockResolvedValue(null);
   
@@ -163,6 +166,163 @@ describe('TemplatesService', () => {
   
       // assert
       expect(repository.findById).toHaveBeenCalled();
+    });
+
+    it('should update a template adding a field', async () => {
+      // arrange
+      const templateToUpdate = createTemplate(templateId, templateTitle);
+
+      const request = new UpdateTemplateDto();
+      request.title = "New Title";
+      request.fields = [
+        new FieldRequestDto(
+         "Age Field",
+          FieldType.NUMBER
+        ),
+        new FieldRequestDto(
+          fieldTitle,
+          FieldType.TEXT,
+          templateToUpdate.fields[0].id
+        )
+      ];
+  
+      jest.spyOn(repository, 'findById').mockResolvedValue(templateToUpdate);
+      jest.spyOn(repository, 'update').mockResolvedValue(templateToUpdate);
+  
+      // act
+      const response = await service.update(templateId.toHexString(), request);
+  
+      // assert
+      expect(repository.findById).toHaveBeenCalledWith(templateToUpdate.id);
+      
+      expect(repository.update).toHaveBeenCalledWith(
+        templateToUpdate.id,
+        expect.objectContaining({
+          id: templateToUpdate.id,
+          title: request.title,
+          fields: expect.arrayContaining([
+            expect.objectContaining({
+              id: '',
+              title: request.fields[0].title,
+              type: request.fields[0].type
+            }),
+            expect.objectContaining({
+              id: request.fields[1].id,
+              title: request.fields[1].title,
+              type: request.fields[1].type
+            }),
+          ])
+        })
+      );
+      
+      expect(response).toStrictEqual(expect.objectContaining({ id: templateToUpdate.id }));
+    });
+
+    it('should update a template removing a field', async () => {
+      // arrange
+      const templateToUpdate = createTemplate(templateId, templateTitle);
+
+      const request = new UpdateTemplateDto();
+      request.title = "New Title";
+      request.fields = [];
+
+      jest.spyOn(repository, 'findById').mockResolvedValue(templateToUpdate);
+      jest.spyOn(repository, 'update').mockResolvedValue(templateToUpdate);
+  
+      // act
+      const response = await service.update(templateId.toHexString(), request);
+  
+      // assert
+      expect(repository.findById).toHaveBeenCalledWith(templateToUpdate.id);
+      
+      expect(repository.update).toHaveBeenCalledWith(
+        templateToUpdate.id,
+        expect.objectContaining({ title: request.title, fields: request.fields }),
+      );
+      
+      expect(response).toStrictEqual(expect.objectContaining({ id: templateToUpdate.id }));
+    });
+  
+    it('should update a template editing a field', async () => {
+      // arrange
+      const templateToUpdate = createTemplate(templateId, templateTitle);
+
+      const request = new UpdateTemplateDto();
+      request.title = "New Title";
+      request.fields = [
+        new FieldRequestDto(
+          "Apperance Description",
+          FieldType.TEXT,
+          templateToUpdate.fields[0].id
+        )
+      ];
+
+      jest.spyOn(repository, 'findById').mockResolvedValue(templateToUpdate);
+      jest.spyOn(repository, 'update').mockResolvedValue(templateToUpdate);
+  
+      // act
+      const response = await service.update(templateId.toHexString(), request);
+  
+      // assert
+      expect(repository.findById).toHaveBeenCalledWith(templateToUpdate.id);
+      
+      expect(repository.update).toHaveBeenCalledWith(
+        templateToUpdate.id,
+        expect.objectContaining({ title: request.title, fields: request.fields }),
+      );
+      
+      expect(response).toStrictEqual(expect.objectContaining({ id: templateToUpdate.id }));
+    });
+
+    it('should not update when template is not found', async () => {
+      // arrange
+      const templateToUpdate = createTemplate(templateId, templateTitle);
+
+      const request = new UpdateTemplateDto();
+      request.title = 'new title';
+      request.fields = [
+        new FieldRequestDto(
+          "Age Field",
+          FieldType.NUMBER
+        ),
+        new FieldRequestDto(
+          fieldTitle,
+          FieldType.TEXT,
+          templateToUpdate.fields[0].id
+      )];
+  
+      jest.spyOn(repository, 'findById').mockResolvedValue(null);
+      jest.spyOn(repository, 'update').mockResolvedValue(null);
+  
+      // act
+      await expect(service.update('unexistent-id', request)).rejects.toThrow(NotFoundException);
+  
+      // assert
+      expect(repository.findById).toHaveBeenCalledWith('unexistent-id');
+      expect(repository.update).not.toHaveBeenCalled();
+    });
+    
+    it('should not update template when repository fails', async () => {
+      // arrange
+      const templateToUpdate = createTemplate(templateId, templateTitle);
+
+      const request = new UpdateTemplateDto();
+      request.title = 'new title';
+      request.fields = [];
+  
+      jest.spyOn(repository, 'findById').mockResolvedValue(templateToUpdate);
+      jest.spyOn(repository, 'update').mockResolvedValue(null);
+  
+      // act
+      await expect(service.update(templateId.toHexString(), request)).rejects.toThrow(InternalServerErrorException);
+  
+      // assert
+      expect(repository.findById).toHaveBeenCalledWith(templateId.toHexString());
+      expect(repository.update)
+        .toHaveBeenCalledWith(
+          templateToUpdate.id,
+          expect.objectContaining({ title: request.title, fields: request.fields })
+        );
     });
 });
 
