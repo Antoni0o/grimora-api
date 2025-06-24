@@ -12,7 +12,7 @@ import { TemplateResponseDto } from './dto/template-response.dto';
 import { FieldResponseDto } from './dto/field-response.dto';
 
 const INTERNAL_SERVER_ERROR_MESSAGE = 'Internal Error at Template operation. Try again, later.';
-const NOT_FOUND_MESSAGE = 'System not found.';
+const NOT_FOUND_MESSAGE = 'Template not found.';
 
 @Injectable()
 export class TemplatesService {
