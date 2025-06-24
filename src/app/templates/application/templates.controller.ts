@@ -8,8 +8,8 @@ export class TemplatesController {
   constructor(private readonly templatesService: TemplatesService) {}
 
   @Post()
-  create(@Body() createTemplateDto: CreateTemplateDto) {
-    return this.templatesService.create(createTemplateDto);
+  create(@Body() requestBody: CreateTemplateDto) {
+    return this.templatesService.create(requestBody);
   }
 
   @Get()
@@ -19,16 +19,16 @@ export class TemplatesController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.templatesService.findOne(+id);
+    return this.templatesService.findOne(id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateTemplateDto: UpdateTemplateDto) {
-    return this.templatesService.update(+id, updateTemplateDto);
+  update(@Param('id') id: string, @Body() requestBody: UpdateTemplateDto) {
+    return this.templatesService.update(id, requestBody);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.templatesService.delete(+id);
+    return this.templatesService.delete(id);
   }
 }
