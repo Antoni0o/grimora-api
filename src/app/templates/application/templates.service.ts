@@ -11,13 +11,12 @@ import { FieldRequestDto } from './dto/field-request.dto';
 import { TemplateResponseDto } from './dto/template-response.dto';
 import { FieldResponseDto } from './dto/field-response.dto';
 
-const INTERNAL_SERVER_ERROR_MESSAGE = 'Internal Error at RPG Template creation. Try again, later.';
-const BAD_REQUEST_MESSAGE = 'Requester is not the Creator.';
+const INTERNAL_SERVER_ERROR_MESSAGE = 'Internal Error at Template operation. Try again, later.';
 const NOT_FOUND_MESSAGE = 'System not found.';
 
 @Injectable()
 export class TemplatesService {
-  constructor(@Inject(TEMPLATE_REPOSITORY) private readonly repository: ITemplateRepository) { }
+  constructor(@Inject(TEMPLATE_REPOSITORY) private readonly repository: ITemplateRepository) {}
 
   async create(request: CreateTemplateDto): Promise<TemplateResponseDto> {
     const template = new Template('', request.title, this.mapFields(request.fields));
@@ -31,7 +30,7 @@ export class TemplatesService {
 
   async findAll(): Promise<TemplateResponseDto[]> {
     const response = await this.repository.findAll();
-    
+
     if (!response) throw new InternalServerErrorException(INTERNAL_SERVER_ERROR_MESSAGE);
 
     return response.map(template => this.mapToDto(template));
@@ -51,17 +50,25 @@ export class TemplatesService {
     if (!template) throw new NotFoundException(NOT_FOUND_MESSAGE);
 
     template.title = request.title || template.title;
-    template.fields = request.fields ?  this.mapFields(request.fields) : template.fields;
+    template.fields = request.fields ? this.mapFields(request.fields) : template.fields;
 
-    const response = await this.repository.update(id,template);
+    const response = await this.repository.update(id, template);
 
     if (!response) throw new InternalServerErrorException(INTERNAL_SERVER_ERROR_MESSAGE);
 
     return response;
   }
 
-  delete(id: number) {
-    return `This action removes a #${id} template`;
+  async delete(id: string): Promise<boolean> {
+    const template = await this.repository.findById(id);
+
+    if (!template) throw new NotFoundException(NOT_FOUND_MESSAGE);
+
+    const response = await this.repository.delete(id);
+
+    if (!response) throw new InternalServerErrorException(INTERNAL_SERVER_ERROR_MESSAGE);
+
+    return response;
   }
 
   private mapFields(fields: FieldRequestDto[]): Field[] {
@@ -74,13 +81,13 @@ export class TemplatesService {
 
   private mapToFieldData(field: FieldRequestDto): FieldData {
     return {
-      id: field.id || '' ,
+      id: field.id || '',
       title: field.title,
       type: field.type,
       key: field.key,
       value: field.value,
       resourceId: field.resourceId,
-      fields: field.fields ? field.fields.map(child => this.mapToFieldData(child)) : undefined
+      fields: field.fields ? field.fields.map(child => this.mapToFieldData(child)) : undefined,
     };
   }
 
@@ -88,7 +95,7 @@ export class TemplatesService {
     return new TemplateResponseDto(
       template.id,
       template.title,
-      template.fields.map(field => new FieldResponseDto(field.id, field.title, field.type))
+      template.fields.map(field => new FieldResponseDto(field.id, field.title, field.type)),
     );
   }
 }
