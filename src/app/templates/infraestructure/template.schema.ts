@@ -1,6 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument, Types } from 'mongoose';
+import { HydratedDocument, SchemaDefinitionProperty, Types } from 'mongoose';
 import { FieldType } from '../domain/enums/field-type.enum';
+import { Field } from '../domain/entities/fields/field.entity';
 
 export type FieldDocument = HydratedDocument<FieldMongoSchema>;
 
@@ -14,7 +15,6 @@ export class FieldMongoSchema {
   @Prop({ type: String, enum: FieldType, required: true })
   type!: FieldType;
 
-  @Prop({ type: [FieldMongoSchema], required: true, default: [] })
   fields?: FieldMongoSchema[];
 
   @Prop({ type: String, required: false })
@@ -31,6 +31,15 @@ export class FieldMongoSchema {
 }
 
 export const FieldSchema = SchemaFactory.createForClass(FieldMongoSchema);
+FieldSchema.add({
+  fields: {
+    type: [FieldSchema],
+    default: [],
+    required: false,
+  },
+} satisfies {
+  fields: SchemaDefinitionProperty<FieldMongoSchema[] | undefined>;
+});
 
 export type TemplateDocument = HydratedDocument<TemplateMongoSchema>;
 

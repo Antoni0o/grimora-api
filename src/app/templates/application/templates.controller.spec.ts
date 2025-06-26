@@ -1,13 +1,14 @@
+import { getModelToken } from '@nestjs/mongoose';
 import { Test, TestingModule } from '@nestjs/testing';
-import { TemplatesController } from './templates.controller';
-import { TemplatesService } from './templates.service';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { connect, Connection, Model } from 'mongoose';
-import { getModelToken } from '@nestjs/mongoose';
 import { JwtAuthGuard } from 'src/app/auth/guard/jwt-auth.guard';
+
 import { TEMPLATE_REPOSITORY } from '../domain/constants/template.constants';
 import { TemplateRepository } from '../infraestructure/template.mongoose.repository';
 import { TemplateMongoSchema, TemplateSchema } from '../infraestructure/template.schema';
+import { TemplatesController } from './templates.controller';
+import { TemplatesService } from './templates.service';
 
 describe('TemplatesController', () => {
   let controller: TemplatesController;
@@ -62,5 +63,6 @@ describe('TemplatesController', () => {
 
   it('should be defined', () => {
     expect(controller).toBeDefined();
+    expect(service).toBeDefined();
   });
 });

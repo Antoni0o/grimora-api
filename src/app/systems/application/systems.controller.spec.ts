@@ -1,18 +1,18 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { SystemsController } from './systems.controller';
-import { SystemsService } from './systems.service';
-import { SystemRepository } from '../infraestructure/system.mongoose.repository';
-import { SYSTEM_REPOSITORY } from '../domain/constants/system.constants';
+import { NotFoundException } from '@nestjs/common';
 import { getModelToken } from '@nestjs/mongoose';
-import { SystemMongoSchema, SystemSchema } from '../infraestructure/system.schema';
-import { connect, Connection, Model } from 'mongoose';
+import { Test, TestingModule } from '@nestjs/testing';
 import { MongoMemoryServer } from 'mongodb-memory-server';
+import { connect, Connection, Model, Types } from 'mongoose';
+import { v4 as uuid } from 'uuid';
+
+import { JwtAuthGuard } from 'src/app/auth/guard/jwt-auth.guard';
+import { SYSTEM_REPOSITORY } from '../domain/constants/system.constants';
+import { SystemRepository } from '../infraestructure/system.mongoose.repository';
+import { SystemMongoSchema, SystemSchema } from '../infraestructure/system.schema';
 import { CreateSystemDto } from './dto/create-system.dto';
 import { UpdateSystemDto } from './dto/update-system.dto';
-import { NotFoundException } from '@nestjs/common';
-import { v4 as uuid } from 'uuid';
-import { Types } from 'mongoose';
-import { JwtAuthGuard } from 'src/app/auth/guard/jwt-auth.guard';
+import { SystemsController } from './systems.controller';
+import { SystemsService } from './systems.service';
 
 describe('SystemsController', () => {
   let controller: SystemsController;
@@ -37,7 +37,7 @@ describe('SystemsController', () => {
         },
         {
           provide: getModelToken(SystemMongoSchema.name),
-          useValue: systemModel
+          useValue: systemModel,
         },
       ],
     })
@@ -72,8 +72,13 @@ describe('SystemsController', () => {
 
   describe('create', () => {
     it('should create a new system', async () => {
-      const createSystemDto: CreateSystemDto = { title: 'Test System', templateId: new Types.ObjectId().toHexString(), resourceIds: [new Types.ObjectId().toHexString()], creatorId: uuid() };
-      const userId = uuid()
+      const createSystemDto: CreateSystemDto = {
+        title: 'Test System',
+        templateId: new Types.ObjectId().toHexString(),
+        resourceIds: [new Types.ObjectId().toHexString()],
+        creatorId: uuid(),
+      };
+      const userId = uuid();
       const createdSystem = await controller.create(createSystemDto, userId);
 
       expect(createdSystem).toBeDefined();
@@ -86,7 +91,6 @@ describe('SystemsController', () => {
       expect(foundSystem?.title).toEqual(createSystemDto.title);
     });
   });
-
 
   describe('findAll', () => {
     it('should return an array of systems', async () => {
@@ -107,7 +111,6 @@ describe('SystemsController', () => {
       expect(systems.length).toEqual(0);
     });
   });
-
 
   describe('findOne', () => {
     it('should return a single system by id', async () => {
@@ -130,12 +133,15 @@ describe('SystemsController', () => {
     });
   });
 
-
   describe('update', () => {
     it('should update an existing system', async () => {
       const userId = uuid();
       const createdSystem = await createSystem('system 1', userId);
-      const updateSystemDto: UpdateSystemDto = { title: 'New Name', resourceIds: [new Types.ObjectId().toHexString()], userId: userId };
+      const updateSystemDto: UpdateSystemDto = {
+        title: 'New Name',
+        resourceIds: [new Types.ObjectId().toHexString()],
+        userId: userId,
+      };
 
       const updatedSystem = await controller.update(createdSystem.id, updateSystemDto);
 
@@ -154,7 +160,6 @@ describe('SystemsController', () => {
       await expect(controller.update(nonExistentId, updateSystemDto)).rejects.toThrow(NotFoundException);
     });
   });
-
 
   describe('remove', () => {
     it('should remove an existing system', async () => {
@@ -178,7 +183,7 @@ describe('SystemsController', () => {
   async function createSystem(title: string, userId?: string) {
     return await controller.create(
       { title, creatorId: '', templateId: new Types.ObjectId().toHexString(), resourceIds: [] },
-      userId ?? uuid()
+      userId ?? uuid(),
     );
   }
 });
