@@ -3,19 +3,15 @@ import { TemplatesService } from './templates.service';
 import { CreateTemplateDto } from './dto/create-template.dto';
 import { FieldRequestDto } from './dto/field-request.dto';
 import { FieldType } from '../domain/enums/field-type.enum';
-import { TEMPLATE_REPOSITORY } from '../domain/constants/template.constants';
+import { TEMPLATES_REPOSITORY } from '../domain/constants/template.constants';
 import { ITemplateRepository } from '../domain/repositories/template.repository';
 import { FieldResponseDto } from './dto/field-response.dto';
 import { Types } from 'mongoose';
 import { Template } from '../domain/entities/template.entity';
-import { Field } from '../domain/entities/fields/field.entity';
 import { FieldFactory } from '../domain/factories/field.factory';
 import { TemplateResponseDto } from './dto/template-response.dto';
 import { InternalServerErrorException, NotFoundException } from '@nestjs/common';
-import { create } from 'domain';
 import { UpdateTemplateDto } from './dto/update-template.dto';
-import { createTracing } from 'trace_events';
-import { NumberField } from '../domain/entities/fields/number-field.entity';
 
 describe('TemplatesService', () => {
   let service: TemplatesService;
@@ -30,7 +26,7 @@ describe('TemplatesService', () => {
       providers: [
         TemplatesService,
         {
-          provide: TEMPLATE_REPOSITORY,
+          provide: TEMPLATES_REPOSITORY,
           useValue: <ITemplateRepository>{
             findAll: jest.fn(),
             findById: jest.fn(),
@@ -43,7 +39,7 @@ describe('TemplatesService', () => {
     }).compile();
 
     service = module.get<TemplatesService>(TemplatesService);
-    repository = module.get<ITemplateRepository>(TEMPLATE_REPOSITORY);
+    repository = module.get<ITemplateRepository>(TEMPLATES_REPOSITORY);
   });
 
   it('should be defined', () => {

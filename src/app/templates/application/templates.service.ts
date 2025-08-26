@@ -1,7 +1,7 @@
 import { Inject, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { CreateTemplateDto } from './dto/create-template.dto';
 import { UpdateTemplateDto } from './dto/update-template.dto';
-import { TEMPLATE_REPOSITORY } from '../domain/constants/template.constants';
+import { TEMPLATES_REPOSITORY } from '../domain/constants/template.constants';
 import { ITemplateRepository } from '../domain/repositories/template.repository';
 import { Template } from '../domain/entities/template.entity';
 import { FieldFactory } from '../domain/factories/field.factory';
@@ -16,7 +16,7 @@ const NOT_FOUND_MESSAGE = 'Template not found.';
 
 @Injectable()
 export class TemplatesService {
-  constructor(@Inject(TEMPLATE_REPOSITORY) private readonly repository: ITemplateRepository) {}
+  constructor(@Inject(TEMPLATES_REPOSITORY) private readonly repository: ITemplateRepository) {}
 
   async create(request: CreateTemplateDto): Promise<TemplateResponseDto> {
     const template = new Template('', request.title, this.mapFields(request.fields));

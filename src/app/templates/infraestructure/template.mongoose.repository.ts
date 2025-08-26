@@ -7,7 +7,7 @@ import { Model, Types } from 'mongoose';
 import { TemplateMapper } from './template.mapper';
 
 @Injectable()
-export class TemplateRepository implements ITemplateRepository {
+export class TemplatesRepository implements ITemplateRepository {
   constructor(@InjectModel(TemplateMongoSchema.name) private readonly templateModel: Model<TemplateDocument>) {}
 
   async findAll(): Promise<Template[] | null> {

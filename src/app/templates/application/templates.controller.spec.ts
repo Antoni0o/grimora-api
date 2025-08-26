@@ -4,8 +4,8 @@ import { MongoMemoryServer } from 'mongodb-memory-server';
 import { connect, Connection, Model, Types } from 'mongoose';
 import { JwtAuthGuard } from 'src/app/auth/guard/jwt-auth.guard';
 
-import { TEMPLATE_REPOSITORY } from '../domain/constants/template.constants';
-import { TemplateRepository } from '../infraestructure/template.mongoose.repository';
+import { TEMPLATES_REPOSITORY } from '../domain/constants/template.constants';
+import { TemplatesRepository } from '../infraestructure/template.mongoose.repository';
 import { TemplateMongoSchema, TemplateSchema } from '../infraestructure/template.schema';
 import { TemplatesController } from './templates.controller';
 import { TemplatesService } from './templates.service';
@@ -33,8 +33,8 @@ describe('TemplatesController', () => {
       providers: [
         TemplatesService,
         {
-          provide: TEMPLATE_REPOSITORY,
-          useClass: TemplateRepository,
+          provide: TEMPLATES_REPOSITORY,
+          useClass: TemplatesRepository,
         },
         {
           provide: getModelToken(TemplateMongoSchema.name),
