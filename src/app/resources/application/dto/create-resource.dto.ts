@@ -11,7 +11,7 @@ export class CreateResourceDto {
   @IsArray()
   items: ResourceItemRequestDto[];
 
-  constructor(name: string, items: ResourceItemResponseDto[]) {
+  constructor(name: string, items: ResourceItemRequestDto[]) {
     this.name = name;
     this.items = items;
   }

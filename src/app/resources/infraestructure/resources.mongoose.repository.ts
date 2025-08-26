@@ -1,13 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { IResourcesRepository } from '../domain/repositories/resources.repository';
 import { InjectModel } from '@nestjs/mongoose';
-import { ResourceDocument, ResourceMongoSchema } from './resource.schema';
+import { ResourceDocument, ResourceMongoSchema } from './resources.schema';
 import { Resource } from '../domain/entities/resource.entity';
 import { Model, Types } from 'mongoose';
 import { ResourceMapper } from './resources.mapper';
 
 @Injectable()
-export class ResourceRepository implements IResourcesRepository {
+export class ResourcesRepository implements IResourcesRepository {
   constructor(@InjectModel(ResourceMongoSchema.name) private readonly resourceModel: Model<ResourceDocument>) {}
 
   async findAll(): Promise<Resource[] | null> {

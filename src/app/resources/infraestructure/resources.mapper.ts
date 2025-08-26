@@ -1,6 +1,6 @@
 import { Types } from 'mongoose';
 import { Resource } from '../domain/entities/resource.entity';
-import { ResourceDocument } from './resource.schema';
+import { ResourceDocument } from './resources.schema';
 import { ResourceItem } from '../domain/entities/resource-item.entity';
 import { ResourceItemMongoSchema } from './resource-item.schema';
 
