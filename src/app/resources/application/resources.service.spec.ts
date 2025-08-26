@@ -62,9 +62,9 @@ describe('ResourcesService', () => {
       new ResourceResponseDto(resource.id, request.name, [
         new ResourceItemResponseDto(
           resource.items[0].id,
-          resourceItemDto.name,
-          resourceItemDto.description,
-          resourceItemDto.props,
+          resource.items[0].name,
+          resource.items[0].description,
+          resource.items[0].props,
         ),
       ]),
     );
@@ -167,7 +167,7 @@ describe('ResourcesService', () => {
     expect(repository.findById).toHaveBeenCalled();
   });
 
-  it('should update a resource adding a field', async () => {
+  it('should update a resource adding a item', async () => {
     // arrange
     const resourceToUpdate = createResource(resourceId, resourceName);
 
@@ -192,7 +192,7 @@ describe('ResourcesService', () => {
       expect.objectContaining({
         id: resourceToUpdate.id,
         name: request.name,
-        fields: expect.arrayContaining([
+        items: expect.arrayContaining([
           expect.objectContaining({
             id: '',
             name: request.items[0].name,
@@ -202,8 +202,8 @@ describe('ResourcesService', () => {
           expect.objectContaining({
             id: '',
             name: request.items[1].name,
-            description: request.items[0].description,
-            props: request.items[0].props,
+            description: request.items[1].description,
+            props: request.items[1].props,
           }),
         ]),
       }),
@@ -212,7 +212,7 @@ describe('ResourcesService', () => {
     expect(response).toStrictEqual(expect.objectContaining({ id: resourceToUpdate.id }));
   });
 
-  it('should update a resource removing a field', async () => {
+  it('should update a resource removing a item', async () => {
     // arrange
     const resourceToUpdate = createResource(resourceId, resourceName);
 
@@ -237,7 +237,7 @@ describe('ResourcesService', () => {
     expect(response).toStrictEqual(expect.objectContaining({ id: resourceToUpdate.id }));
   });
 
-  it('should update a resource editing a field', async () => {
+  it('should update a resource editing a item', async () => {
     // arrange
     const resourceToUpdate = createResource(resourceId, resourceName);
 
@@ -256,7 +256,18 @@ describe('ResourcesService', () => {
 
     expect(repository.update).toHaveBeenCalledWith(
       resourceToUpdate.id,
-      expect.objectContaining({ name: request.name, items: request.items }),
+      expect.objectContaining({
+        id: resourceToUpdate.id,
+        name: request.name,
+        items: expect.arrayContaining([
+          expect.objectContaining({
+            id: '',
+            name: request.items[0].name,
+            description: request.items[0].description,
+            props: request.items[0].props,
+          }),
+        ]),
+      }),
     );
 
     expect(response).toStrictEqual(expect.objectContaining({ id: resourceToUpdate.id }));
