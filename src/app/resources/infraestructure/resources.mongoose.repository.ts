@@ -19,6 +19,8 @@ export class ResourcesRepository implements IResourcesRepository {
   }
 
   async findById(id: string): Promise<Resource | null> {
+    if (!Types.ObjectId.isValid(id)) return null;
+
     const resource = await this.resourceModel.findById(id);
 
     if (!resource) return null;
@@ -44,8 +46,8 @@ export class ResourcesRepository implements IResourcesRepository {
       .findByIdAndUpdate(
         id,
         {
-          title: resource.name,
-          fields: resource.items,
+          name: resource.name,
+          resourceItems: resource.items,
         },
         { new: true, runValidators: true },
       )
