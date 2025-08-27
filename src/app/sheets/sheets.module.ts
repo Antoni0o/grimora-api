@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
-import { SheetsService } from './sheets.service';
-import { SheetsController } from './sheets.controller';
+import { SheetsService } from './application/sheets.service';
+import { SheetsController } from './application/sheets.controller';
 
 @Module({
   controllers: [SheetsController],
