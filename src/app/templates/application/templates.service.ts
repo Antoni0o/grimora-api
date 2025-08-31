@@ -49,8 +49,8 @@ export class TemplatesService {
 
     if (!template) throw new NotFoundException(NOT_FOUND_MESSAGE);
 
-    template.title = request.title || template.title;
-    template.fields = request.fields ? this.mapFields(request.fields) : template.fields;
+    template.title = request.title;
+    template.fields = this.mapFields(request.fields);
 
     const response = await this.repository.update(id, template);
 

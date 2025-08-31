@@ -51,10 +51,10 @@ export class SystemsService {
 
     if (!system) throw new NotFoundException(NOT_FOUND_MESSAGE);
 
-    if (request.userId !== system?.creatorId) throw new BadRequestException(BAD_REQUEST_MESSAGE);
+    if (request.requesterId !== system?.creatorId) throw new BadRequestException(BAD_REQUEST_MESSAGE);
 
-    system.resourceIds = request.resourceIds;
     system.title = request.title;
+    system.resourceIds = request.resourceIds;
 
     const response = await this.repository.update(id, system);
 

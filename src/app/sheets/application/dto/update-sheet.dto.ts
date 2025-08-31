@@ -1,4 +1,9 @@
-import { PartialType } from '@nestjs/mapped-types';
+import { OmitType } from '@nestjs/mapped-types';
 import { CreateSheetDto } from './create-sheet.dto';
+import { IsString, IsUUID } from 'class-validator';
 
-export class UpdateSheetDto extends PartialType(CreateSheetDto) {}
+export class UpdateSheetDto extends OmitType(CreateSheetDto, ['ownerId', 'templateId'] as const) {
+  @IsUUID()
+  @IsString()
+  requesterId?: string;
+}

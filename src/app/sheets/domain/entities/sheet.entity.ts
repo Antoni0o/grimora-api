@@ -3,9 +3,9 @@ export class Sheet {
   title: string;
   ownerId: string;
   templateId: string;
-  values: Map<string, unknown>;
+  values: Record<string, unknown>;
 
-  constructor(id: string, title: string, ownerId: string, templateId: string, values: Map<string, unknown>) {
+  constructor(id: string, title: string, ownerId: string, templateId: string, values: Record<string, unknown>) {
     this.id = id;
     this.title = title;
     this.ownerId = ownerId;

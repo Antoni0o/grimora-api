@@ -131,7 +131,7 @@ describe('SystemsService', () => {
     const request = new UpdateSystemDto();
     request.title = 'new title';
     request.resourceIds = [uuid()];
-    request.userId = creatorId;
+    request.requesterId = creatorId;
 
     const systemToUpdate = new System(systemId, title, creatorId, templateId, resourceIds);
     const updatedSystem = new System(systemId, request.title, creatorId, templateId, request.resourceIds);
@@ -173,7 +173,7 @@ describe('SystemsService', () => {
     const request = new UpdateSystemDto();
     request.title = 'new title';
     request.resourceIds = [uuid()];
-    request.userId = uuid();
+    request.requesterId = uuid();
     const systemToUpdate = new System(systemId, title, creatorId, templateId, resourceIds);
 
     jest.spyOn(repository, 'findById').mockResolvedValue(systemToUpdate);
@@ -192,7 +192,7 @@ describe('SystemsService', () => {
     const request = new UpdateSystemDto();
     request.title = 'new title';
     request.resourceIds = [uuid()];
-    request.userId = creatorId;
+    request.requesterId = creatorId;
     const systemToUpdate = new System(systemId, title, creatorId, templateId, resourceIds);
 
     jest.spyOn(repository, 'findById').mockResolvedValue(systemToUpdate);

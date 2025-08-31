@@ -9,13 +9,10 @@ import { User } from 'src/app/auth/decorators/user.decorator';
 @UseGuards(JwtAuthGuard)
 @Controller('systems')
 export class SystemsController {
-  constructor(private readonly systemsService: SystemsService) { }
+  constructor(private readonly systemsService: SystemsService) {}
 
   @Post()
-  create(
-    @Body() request: CreateSystemDto,
-    @User('sub') userId: string
-  ) {
+  create(@Body() request: CreateSystemDto, @User('sub') userId: string) {
     request.creatorId = userId;
 
     return this.systemsService.create(request);

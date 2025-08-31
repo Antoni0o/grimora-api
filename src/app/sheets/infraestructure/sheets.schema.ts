@@ -14,8 +14,8 @@ export class SheetMongoSchema {
   @Prop({ type: Types.ObjectId, ref: 'Template', required: true })
   template!: Types.ObjectId;
 
-  @Prop({ required: true })
-  values!: Map<string, unknown>;
+  @Prop({ type: Object, required: true })
+  values!: Record<string, unknown>;
 
   createdAt!: Date;
   updatedAt!: Date;

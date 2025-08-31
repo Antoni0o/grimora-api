@@ -3,7 +3,7 @@ import { CreateSystemDto } from './create-system.dto';
 import { IsString, IsUUID } from 'class-validator';
 
 export class UpdateSystemDto extends OmitType(CreateSystemDto, ['creatorId', 'templateId'] as const) {
-    @IsUUID()
-    @IsString()
-    userId?: string;
+  @IsUUID()
+  @IsString()
+  requesterId?: string;
 }

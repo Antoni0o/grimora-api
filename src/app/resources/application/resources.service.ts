@@ -47,8 +47,8 @@ export class ResourcesService {
 
     if (!resource) throw new NotFoundException(NOT_FOUND_MESSAGE);
 
-    resource.name = request.name || resource.name;
-    resource.items = request.items ? this.mapItems(request.items) : resource.items;
+    resource.name = request.name;
+    resource.items = this.mapItems(request.items);
 
     const response = await this.repository.update(id, resource);
 

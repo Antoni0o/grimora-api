@@ -49,7 +49,7 @@ export class SheetsRepository implements ISheetsRepository {
         id,
         {
           title: sheet.title,
-          resources: sheet.values,
+          values: sheet.values,
         },
         { new: true, runValidators: true },
       )

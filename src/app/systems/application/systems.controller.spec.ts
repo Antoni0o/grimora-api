@@ -140,7 +140,7 @@ describe('SystemsController', () => {
       const updateSystemDto: UpdateSystemDto = {
         title: 'New Name',
         resourceIds: [new Types.ObjectId().toHexString()],
-        userId: userId,
+        requesterId: userId,
       };
 
       const updatedSystem = await controller.update(createdSystem.id, updateSystemDto);
