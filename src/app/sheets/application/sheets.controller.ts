@@ -2,7 +2,7 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@n
 import { SheetsService } from './sheets.service';
 import { CreateSheetDto } from './dto/create-sheet.dto';
 import { UpdateSheetDto } from './dto/update-sheet.dto';
-import { AuthGuard, Session, UserSession } from '@thallesp/nestjs-better-auth';
+import { AuthGuard, Session, type UserSession } from '@thallesp/nestjs-better-auth';
 
 @UseGuards(AuthGuard)
 @Controller('sheets')

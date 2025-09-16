@@ -11,7 +11,7 @@ import { v4 as uuid } from 'uuid';
 import { CreateSheetDto } from './dto/create-sheet.dto';
 import { NotFoundException } from '@nestjs/common';
 import { UpdateSheetDto } from './dto/update-sheet.dto';
-import { AuthGuard } from '@thallesp/nestjs-better-auth';
+import { AuthGuard, type UserSession } from '@thallesp/nestjs-better-auth';
 
 describe('SheetsController', () => {
   let controller: SheetsController;
@@ -19,6 +19,13 @@ describe('SheetsController', () => {
   let mongod: MongoMemoryServer;
   let mongoConnection: Connection;
   let sheetModel: Model<SheetMongoSchema>;
+
+  const userId = uuid();
+  const userSession = <UserSession>{
+    user: {
+      id: userId,
+    },
+  };
 
   beforeAll(async () => {
     mongod = await MongoMemoryServer.create();
@@ -77,8 +84,8 @@ describe('SheetsController', () => {
         ownerId: uuid(),
         values: { teste: 12222 },
       };
-      const userId = uuid();
-      const createdSheet = await controller.create(createSheetDto, userId);
+
+      const createdSheet = await controller.create(createSheetDto, userSession);
 
       expect(createdSheet).toBeDefined();
       expect(createdSheet.title).toEqual(createSheetDto.title);
@@ -134,14 +141,13 @@ describe('SheetsController', () => {
 
   describe('update', () => {
     it('should update an existing sheet', async () => {
-      const userId = uuid();
       const createdSheet = await createSheet('sheet 1', userId);
       const updateSheetDto: UpdateSheetDto = {
         title: 'New Name',
         values: {},
       };
 
-      const updatedSheet = await controller.update(createdSheet.id, updateSheetDto, userId);
+      const updatedSheet = await controller.update(createdSheet.id, updateSheetDto, userSession);
 
       expect(updatedSheet).toBeDefined();
       expect(updatedSheet.id).toEqual(createdSheet.id);
@@ -153,36 +159,33 @@ describe('SheetsController', () => {
     });
 
     it('should throw NotFoundException if sheet to update is not found', async () => {
-      const userId = uuid();
-
       const nonExistentId = new Types.ObjectId().toHexString();
       const updateSheetDto: UpdateSheetDto = { title: 'New Name', values: {} };
 
-      await expect(controller.update(nonExistentId, updateSheetDto, userId)).rejects.toThrow(NotFoundException);
+      await expect(controller.update(nonExistentId, updateSheetDto, userSession)).rejects.toThrow(NotFoundException);
     });
   });
 
-  describe('remove', () => {
-    it('should remove an existing sheet', async () => {
-      const userId = uuid();
+  describe('delete', () => {
+    it('should delete an existing sheet', async () => {
       const createdSheet = await createSheet('sheet 1', userId);
 
-      await controller.delete(createdSheet.id, userId);
+      await controller.delete(createdSheet.id, userSession);
 
       const foundSheet = await sheetModel.findById(createdSheet.id);
       expect(foundSheet).toBeNull();
     });
 
-    it('should throw NotFoundException if sheet to remove is not found', async () => {
+    it('should throw NotFoundException if sheet to delete is not found', async () => {
       const nonExistentId = new Types.ObjectId().toHexString();
-      const userId = uuid();
 
-      await expect(controller.delete(nonExistentId, userId)).rejects.toThrow(NotFoundException);
+      await expect(controller.delete(nonExistentId, userSession)).rejects.toThrow(NotFoundException);
     });
   });
 
   async function createSheet(title: string, userId?: string) {
     const ownerId = userId ?? uuid();
+    userSession.user.id = ownerId;
 
     return await controller.create(
       {
@@ -193,7 +196,7 @@ describe('SheetsController', () => {
           value1: 2212,
         },
       },
-      ownerId,
+      userSession,
     );
   }
 });

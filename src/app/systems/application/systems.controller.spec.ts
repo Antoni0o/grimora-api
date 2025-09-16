@@ -12,7 +12,7 @@ import { CreateSystemDto } from './dto/create-system.dto';
 import { UpdateSystemDto } from './dto/update-system.dto';
 import { SystemsController } from './systems.controller';
 import { SystemsService } from './systems.service';
-import { AuthGuard } from '@thallesp/nestjs-better-auth';
+import { AuthGuard, type UserSession } from '@thallesp/nestjs-better-auth';
 
 describe('SystemsController', () => {
   let controller: SystemsController;
@@ -20,6 +20,13 @@ describe('SystemsController', () => {
   let mongod: MongoMemoryServer;
   let mongoConnection: Connection;
   let systemModel: Model<SystemMongoSchema>;
+
+  const userId = uuid();
+  const userSession = <UserSession>{
+    user: {
+      id: userId,
+    },
+  };
 
   beforeAll(async () => {
     mongod = await MongoMemoryServer.create();
@@ -78,8 +85,7 @@ describe('SystemsController', () => {
         resourceIds: [new Types.ObjectId().toHexString()],
         creatorId: uuid(),
       };
-      const userId = uuid();
-      const createdSystem = await controller.create(createSystemDto, userId);
+      const createdSystem = await controller.create(createSystemDto, userSession);
 
       expect(createdSystem).toBeDefined();
       expect(createdSystem.title).toEqual(createSystemDto.title);
@@ -163,10 +169,9 @@ describe('SystemsController', () => {
 
   describe('remove', () => {
     it('should remove an existing system', async () => {
-      const userId = uuid();
       const createdSystem = await createSystem('system 1', userId);
 
-      await controller.delete(createdSystem.id, userId);
+      await controller.delete(createdSystem.id, userSession);
 
       const foundSystem = await systemModel.findById(createdSystem.id);
       expect(foundSystem).toBeNull();
@@ -174,16 +179,16 @@ describe('SystemsController', () => {
 
     it('should throw NotFoundException if system to remove is not found', async () => {
       const nonExistentId = new Types.ObjectId().toHexString();
-      const userId = uuid();
 
-      await expect(controller.delete(nonExistentId, userId)).rejects.toThrow(NotFoundException);
+      await expect(controller.delete(nonExistentId, userSession)).rejects.toThrow(NotFoundException);
     });
   });
 
   async function createSystem(title: string, userId?: string) {
+    userSession.user.id = userId ?? uuid();
     return await controller.create(
       { title, creatorId: '', templateId: new Types.ObjectId().toHexString(), resourceIds: [] },
-      userId ?? uuid(),
+      userSession,
     );
   }
 });

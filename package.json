@@ -65,36 +65,5 @@
     "tsconfig-paths": "^4.2.0",
     "typescript": "^5.7.3",
     "typescript-eslint": "^8.20.0"
-  },
-  "jest": {
-    "moduleFileExtensions": [
-      "js",
-      "json",
-      "ts"
-    ],
-    "rootDir": "src",
-    "testRegex": ".*\\.spec\\.ts$",
-    "transform": {
-      "^.+\\.(t|j)s$": "ts-jest"
-    },
-    "collectCoverageFrom": [
-      "**/*.(t|j)s"
-    ],
-    "coveragePathIgnorePatterns": [
-      "node_modules",
-      "test-config",
-      "src/app/auth",
-      "src/app/email",
-      "jestGlobalMocks.ts",
-      "\\.module\\.ts",
-      "src/main.ts",
-      "\\.mock\\.ts",
-      "/infraestructure/"
-    ],
-    "coverageDirectory": "../coverage",
-    "testEnvironment": "node",
-    "moduleNameMapper": {
-      "src/(.*)": "<rootDir>/$1"
-    }
   }
 }
