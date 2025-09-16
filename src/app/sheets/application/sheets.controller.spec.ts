@@ -7,11 +7,11 @@ import { SheetMongoSchema, SheetSchema } from '../infraestructure/sheets.schema'
 import { SHEETS_REPOSITORY } from '../domain/constants/sheets.constants';
 import { SheetsRepository } from '../infraestructure/sheets.mongoose.repository';
 import { getModelToken } from '@nestjs/mongoose';
-import { JwtAuthGuard } from 'src/app/auth/guard/jwt-auth.guard';
 import { v4 as uuid } from 'uuid';
 import { CreateSheetDto } from './dto/create-sheet.dto';
 import { NotFoundException } from '@nestjs/common';
 import { UpdateSheetDto } from './dto/update-sheet.dto';
+import { AuthGuard } from '@thallesp/nestjs-better-auth';
 
 describe('SheetsController', () => {
   let controller: SheetsController;
@@ -40,7 +40,7 @@ describe('SheetsController', () => {
         },
       ],
     })
-      .overrideGuard(JwtAuthGuard)
+      .overrideGuard(AuthGuard)
       .useValue({
         canActivate: jest.fn().mockReturnValue(true),
       })

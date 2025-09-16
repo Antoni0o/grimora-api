@@ -2,9 +2,9 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@n
 import { TemplatesService } from './templates.service';
 import { CreateTemplateDto } from './dto/create-template.dto';
 import { UpdateTemplateDto } from './dto/update-template.dto';
-import { JwtAuthGuard } from 'src/app/auth/guard/jwt-auth.guard';
+import { AuthGuard } from '@thallesp/nestjs-better-auth';
 
-@UseGuards(JwtAuthGuard)
+@UseGuards(AuthGuard)
 @Controller('templates')
 export class TemplatesController {
   constructor(private readonly templatesService: TemplatesService) {}

@@ -2,7 +2,6 @@ import { getModelToken } from '@nestjs/mongoose';
 import { Test, TestingModule } from '@nestjs/testing';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { connect, Connection, Model, Types } from 'mongoose';
-import { JwtAuthGuard } from 'src/app/auth/guard/jwt-auth.guard';
 
 import { TEMPLATES_REPOSITORY } from '../domain/constants/template.constants';
 import { TemplatesRepository } from '../infraestructure/template.mongoose.repository';
@@ -14,6 +13,7 @@ import { FieldRequestDto } from './dto/field-request.dto';
 import { FieldType } from '../domain/enums/field-type.enum';
 import { NotFoundException } from '@nestjs/common';
 import { UpdateTemplateDto } from './dto/update-template.dto';
+import { AuthGuard } from '@thallesp/nestjs-better-auth';
 
 describe('TemplatesController', () => {
   let controller: TemplatesController;
@@ -42,7 +42,7 @@ describe('TemplatesController', () => {
         },
       ],
     })
-      .overrideGuard(JwtAuthGuard)
+      .overrideGuard(AuthGuard)
       .useValue({
         canActivate: jest.fn().mockReturnValue(true),
       })

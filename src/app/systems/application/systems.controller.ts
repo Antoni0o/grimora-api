@@ -3,17 +3,16 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@n
 import { CreateSystemDto } from './dto/create-system.dto';
 import { SystemsService } from './systems.service';
 import { UpdateSystemDto } from './dto/update-system.dto';
-import { JwtAuthGuard } from 'src/app/auth/guard/jwt-auth.guard';
-import { User } from 'src/app/auth/decorators/user.decorator';
+import { AuthGuard, Session, UserSession } from '@thallesp/nestjs-better-auth';
 
-@UseGuards(JwtAuthGuard)
+@UseGuards(AuthGuard)
 @Controller('systems')
 export class SystemsController {
   constructor(private readonly systemsService: SystemsService) {}
 
   @Post()
-  create(@Body() request: CreateSystemDto, @User('sub') userId: string) {
-    request.creatorId = userId;
+  create(@Body() request: CreateSystemDto, @Session() session: UserSession) {
+    request.creatorId = session.user.id;
 
     return this.systemsService.create(request);
   }
@@ -34,7 +33,7 @@ export class SystemsController {
   }
 
   @Delete(':id')
-  delete(@Param('id') id: string, @User('sub') userId: string) {
-    return this.systemsService.delete(id, userId);
+  delete(@Param('id') id: string, @Session() session: UserSession) {
+    return this.systemsService.delete(id, session.user.id);
   }
 }

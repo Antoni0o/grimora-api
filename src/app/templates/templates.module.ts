@@ -3,11 +3,10 @@ import { TemplatesService } from './application/templates.service';
 import { TemplatesController } from './application/templates.controller';
 import { MongooseModule } from '@nestjs/mongoose';
 import { TemplateMongoSchema, TemplateSchema } from './infraestructure/template.schema';
-import { AuthModule } from '../auth/auth.module';
 import { TemplatesRepository as TemplatesRepository } from './infraestructure/template.mongoose.repository';
 
 @Module({
-  imports: [MongooseModule.forFeature([{ name: TemplateMongoSchema.name, schema: TemplateSchema }]), AuthModule],
+  imports: [MongooseModule.forFeature([{ name: TemplateMongoSchema.name, schema: TemplateSchema }])],
   controllers: [TemplatesController],
   providers: [
     TemplatesService,

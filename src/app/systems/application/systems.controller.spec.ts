@@ -5,7 +5,6 @@ import { MongoMemoryServer } from 'mongodb-memory-server';
 import { connect, Connection, Model, Types } from 'mongoose';
 import { v4 as uuid } from 'uuid';
 
-import { JwtAuthGuard } from 'src/app/auth/guard/jwt-auth.guard';
 import { SYSTEM_REPOSITORY } from '../domain/constants/system.constants';
 import { SystemRepository } from '../infraestructure/system.mongoose.repository';
 import { SystemMongoSchema, SystemSchema } from '../infraestructure/system.schema';
@@ -13,6 +12,7 @@ import { CreateSystemDto } from './dto/create-system.dto';
 import { UpdateSystemDto } from './dto/update-system.dto';
 import { SystemsController } from './systems.controller';
 import { SystemsService } from './systems.service';
+import { AuthGuard } from '@thallesp/nestjs-better-auth';
 
 describe('SystemsController', () => {
   let controller: SystemsController;
@@ -41,7 +41,7 @@ describe('SystemsController', () => {
         },
       ],
     })
-      .overrideGuard(JwtAuthGuard)
+      .overrideGuard(AuthGuard)
       .useValue({
         canActivate: jest.fn().mockReturnValue(true),
       })

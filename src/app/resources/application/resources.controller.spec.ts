@@ -8,10 +8,10 @@ import { RESOURCES_REPOSITORY } from '../domain/constants/resources.constants';
 import { ResourcesRepository } from '../infraestructure/resources.mongoose.repository';
 import { getModelToken } from '@nestjs/mongoose';
 import { NotFoundException } from '@nestjs/common';
-import { JwtAuthGuard } from 'src/app/auth/guard/jwt-auth.guard';
 import { CreateResourceDto } from './dto/create-resource.dto';
 import { UpdateResourceDto } from './dto/update-resource.dto';
 import { ResourceItemRequestDto } from './dto/resource-item-request.dto';
+import { AuthGuard } from '@thallesp/nestjs-better-auth';
 
 describe('ResourcesController', () => {
   let controller: ResourcesController;
@@ -40,7 +40,7 @@ describe('ResourcesController', () => {
         },
       ],
     })
-      .overrideGuard(JwtAuthGuard)
+      .overrideGuard(AuthGuard)
       .useValue({
         canActivate: jest.fn().mockReturnValue(true),
       })

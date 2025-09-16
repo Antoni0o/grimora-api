@@ -2,17 +2,16 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@n
 import { SheetsService } from './sheets.service';
 import { CreateSheetDto } from './dto/create-sheet.dto';
 import { UpdateSheetDto } from './dto/update-sheet.dto';
-import { JwtAuthGuard } from 'src/app/auth/guard/jwt-auth.guard';
-import { User } from 'src/app/auth/decorators/user.decorator';
+import { AuthGuard, Session, UserSession } from '@thallesp/nestjs-better-auth';
 
-@UseGuards(JwtAuthGuard)
+@UseGuards(AuthGuard)
 @Controller('sheets')
 export class SheetsController {
   constructor(private readonly sheetsService: SheetsService) {}
 
   @Post()
-  create(@Body() createSheetDto: CreateSheetDto, @User('sub') requesterId: string) {
-    createSheetDto.ownerId = requesterId;
+  create(@Body() createSheetDto: CreateSheetDto, @Session() session: UserSession) {
+    createSheetDto.ownerId = session.user.id;
 
     return this.sheetsService.create(createSheetDto);
   }
@@ -28,13 +27,13 @@ export class SheetsController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateSheetDto: UpdateSheetDto, @User('sub') requesterId: string) {
-    updateSheetDto.requesterId = requesterId;
+  update(@Param('id') id: string, @Body() updateSheetDto: UpdateSheetDto, @Session() session: UserSession) {
+    updateSheetDto.requesterId = session.user.id;
     return this.sheetsService.update(id, updateSheetDto);
   }
 
   @Delete(':id')
-  delete(@Param('id') id: string, @User('sub') requesterId: string) {
-    return this.sheetsService.delete(id, requesterId);
+  delete(@Param('id') id: string, @Session() session: UserSession) {
+    return this.sheetsService.delete(id, session.user.id);
   }
 }
