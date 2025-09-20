@@ -82,6 +82,8 @@ describe('SheetsController', () => {
         title: 'Test Sheet',
         templateId: new Types.ObjectId().toHexString(),
         ownerId: uuid(),
+        ownerSheetsLimit: 1,
+        ownerSheetsCount: 0,
         values: { teste: 12222 },
       };
 
@@ -191,6 +193,8 @@ describe('SheetsController', () => {
       {
         title,
         ownerId,
+        ownerSheetsCount: 0,
+        ownerSheetsLimit: 1,
         templateId: new Types.ObjectId().toHexString(),
         values: {
           value1: 2212,

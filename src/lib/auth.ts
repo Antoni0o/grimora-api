@@ -11,6 +11,25 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
   },
+  user: {
+    additionalFields: {
+      sheets_limit: {
+        type: 'number',
+        required: true,
+        defaultValue: 1,
+      },
+      sheets_count: {
+        type: 'number',
+        required: true,
+        defaultValue: 0,
+      },
+      plan: {
+        type: 'number',
+        required: true,
+        defaultValue: 0,
+      },
+    },
+  },
   socialProviders: {
     google: {
       clientId: process.env.GOOGLE_CLIENT_ID as string,
@@ -19,3 +38,5 @@ export const auth = betterAuth({
   },
   trustedOrigins: ['http://localhost:4321'],
 });
+
+export type UserSession = typeof auth.$Infer.Session;

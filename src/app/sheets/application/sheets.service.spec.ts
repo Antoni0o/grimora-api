@@ -46,7 +46,7 @@ describe('SheetsService', () => {
 
   it('should create a sheet', async () => {
     // arrange
-    const request = new CreateSheetDto(title, ownerId, templateId, values);
+    const request = new CreateSheetDto(title, ownerId, 1, 0, templateId, values);
 
     const createdSheet = new Sheet(sheetId, title, ownerId, templateId, values);
     jest.spyOn(repository, 'create').mockResolvedValue(createdSheet);
@@ -61,7 +61,7 @@ describe('SheetsService', () => {
 
   it('should not create a sheet when repository fails', async () => {
     // arrange
-    const request = new CreateSheetDto(title, ownerId, templateId, values);
+    const request = new CreateSheetDto(title, ownerId, 1, 0, templateId, values);
 
     jest.spyOn(repository, 'create').mockResolvedValue(null);
 
@@ -72,6 +72,20 @@ describe('SheetsService', () => {
     expect(repository.create).toHaveBeenCalledWith(
       expect.objectContaining({ id: '', title, ownerId, templateId, values }),
     );
+  });
+
+  it('should not create a sheet when ownerSheetsCount is at limit', async () => {
+    // arrange
+    const request = new CreateSheetDto(title, ownerId, 1, 1, templateId, values);
+
+    const createdSheet = new Sheet(sheetId, title, ownerId, templateId, values);
+    jest.spyOn(repository, 'create').mockResolvedValue(createdSheet);
+
+    // act
+    await expect(service.create(request)).rejects.toThrow(BadRequestException);
+
+    // assert
+    expect(repository.create).not.toHaveBeenCalled();
   });
 
   it('should find all sheets', async () => {

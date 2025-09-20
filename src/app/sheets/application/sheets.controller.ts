@@ -2,7 +2,8 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@n
 import { SheetsService } from './sheets.service';
 import { CreateSheetDto } from './dto/create-sheet.dto';
 import { UpdateSheetDto } from './dto/update-sheet.dto';
-import { AuthGuard, Session, type UserSession } from '@thallesp/nestjs-better-auth';
+import { AuthGuard, Session } from '@thallesp/nestjs-better-auth';
+import { UserSession } from 'src/lib/auth';
 
 @UseGuards(AuthGuard)
 @Controller('sheets')
@@ -12,6 +13,8 @@ export class SheetsController {
   @Post()
   create(@Body() createSheetDto: CreateSheetDto, @Session() session: UserSession) {
     createSheetDto.ownerId = session.user.id;
+    createSheetDto.ownerSheetsCount = session.user.sheets_count;
+    createSheetDto.ownerSheetsLimit = session.user.sheets_limit;
 
     return this.sheetsService.create(createSheetDto);
   }

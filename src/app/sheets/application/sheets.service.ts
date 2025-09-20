@@ -23,6 +23,10 @@ export class SheetsService {
   async create(request: CreateSheetDto): Promise<SheetResponseDto> {
     const sheet = new Sheet('', request.title, request.ownerId, request.templateId, request.values);
 
+    if (request.ownerSheetsCount >= request.ownerSheetsLimit) {
+      throw new BadRequestException("Owner's sheets limit reached.");
+    }
+
     const response = await this.repository.create(sheet);
 
     if (!response) throw new InternalServerErrorException(INTERNAL_SERVER_ERROR_MESSAGE);

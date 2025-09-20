@@ -1,4 +1,4 @@
-import { IsMongoId, IsNotEmpty, IsString, IsUUID } from 'class-validator';
+import { IsMongoId, IsNotEmpty, IsNumber, IsString, IsUUID } from 'class-validator';
 
 export class CreateSheetDto {
   @IsString()
@@ -9,6 +9,12 @@ export class CreateSheetDto {
   @IsString()
   ownerId: string;
 
+  @IsNumber()
+  ownerSheetsLimit: number;
+
+  @IsNumber()
+  ownerSheetsCount: number;
+
   @IsNotEmpty()
   @IsMongoId()
   templateId: string;
@@ -16,9 +22,18 @@ export class CreateSheetDto {
   @IsNotEmpty()
   values: Record<string, unknown>;
 
-  constructor(title: string, ownerId: string, templateId: string, values: Record<string, unknown>) {
+  constructor(
+    title: string,
+    ownerId: string,
+    ownerSheetsLimit: number,
+    ownerSheetsCount: number,
+    templateId: string,
+    values: Record<string, unknown>,
+  ) {
     this.title = title;
     this.ownerId = ownerId;
+    this.ownerSheetsLimit = ownerSheetsLimit;
+    this.ownerSheetsCount = ownerSheetsCount;
     this.templateId = templateId;
     this.values = values;
   }
