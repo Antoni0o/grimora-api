@@ -23,7 +23,7 @@ import { auth } from './lib/auth';
     SheetsModule,
     SystemsModule,
     ResourcesModule,
-    AuthModule,
+    AuthModule.forRoot(auth),
   ],
   controllers: [],
   providers: [],
