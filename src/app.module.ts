@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { UploadModule } from './app/upload/upload.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { TemplatesModule } from './app/templates/templates.module';
@@ -10,20 +11,21 @@ import { auth } from './lib/auth';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({
-      isGlobal: true,
-    }),
-    AuthModule.forRoot(auth),
+    ConfigModule.forRoot({ isGlobal: true }),
     MongooseModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
         uri: config.get<string>('MONGO_URI'),
       }),
     }),
+    UploadModule,
     TemplatesModule,
     SheetsModule,
     SystemsModule,
     ResourcesModule,
+    AuthModule,
   ],
+  controllers: [],
+  providers: [],
 })
 export class AppModule {}

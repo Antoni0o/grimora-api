@@ -25,6 +25,22 @@
 
 [Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
 
+## Environment Variables
+
+Copy `.env.example` to `.env` and configure the following variables:
+
+### Database
+
+- `MONGO_URI`: MongoDB connection string
+
+### Cloudflare R2 Configuration
+
+- `CLOUDFLARE_ACCOUNT_ID`: Your Cloudflare account ID
+- `CLOUDFLARE_ACCESS_KEY_ID`: R2 access key ID
+- `CLOUDFLARE_SECRET_ACCESS_KEY`: R2 secret access key
+- `CLOUDFLARE_BUCKET`: R2 bucket name for file storage
+- `CLOUDFLARE_PUBLIC_URL`: Public URL for accessing uploaded files
+
 ## Project setup
 
 ```bash
