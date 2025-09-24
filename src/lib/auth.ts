@@ -16,7 +16,7 @@ export const auth = betterAuth({
       sheets_limit: {
         type: 'number',
         required: true,
-        defaultValue: 1,
+        defaultValue: 3,
       },
       sheets_count: {
         type: 'number',
@@ -36,7 +36,7 @@ export const auth = betterAuth({
       clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
     },
   },
-  trustedOrigins: ['http://localhost:4321'],
+  trustedOrigins: [process.env.CORS_ORIGINS ?? ''],
 });
 
 export type UserSession = typeof auth.$Infer.Session;
