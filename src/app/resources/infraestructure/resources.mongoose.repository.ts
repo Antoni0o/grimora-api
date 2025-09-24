@@ -30,7 +30,7 @@ export class ResourcesRepository implements IResourcesRepository {
 
   async create(resource: Resource): Promise<Resource | null> {
     const createdResource = await this.resourceModel.create({
-      name: resource.name,
+      title: resource.name,
       resourceItems: resource.items,
     });
 
@@ -46,7 +46,7 @@ export class ResourcesRepository implements IResourcesRepository {
       .findByIdAndUpdate(
         id,
         {
-          name: resource.name,
+          title: resource.name,
           resourceItems: resource.items,
         },
         { new: true, runValidators: true },

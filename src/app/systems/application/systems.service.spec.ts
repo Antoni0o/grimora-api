@@ -15,7 +15,7 @@ describe('SystemsService', () => {
   let repository: ISystemRepository;
 
   const resourceIds = [];
-  const templateId = 'templateUUID';
+  const templateIds = [new Types.ObjectId().toHexString()];
   const creatorId = 'creatorUUID';
   const title = 'new rpg system';
   const systemId = new Types.ObjectId().toHexString();
@@ -47,8 +47,8 @@ describe('SystemsService', () => {
 
   it('should create a system', async () => {
     // arrange
-    const request = new CreateSystemDto(title, templateId, resourceIds, creatorId);
-    const createdSystem = new System(systemId, title, creatorId, templateId, resourceIds);
+    const request = new CreateSystemDto(title, templateIds, resourceIds, creatorId);
+    const createdSystem = new System(systemId, title, creatorId, [], []);
 
     jest.spyOn(repository, 'create').mockResolvedValue(createdSystem);
 
@@ -57,14 +57,19 @@ describe('SystemsService', () => {
 
     // assert
     expect(repository.create).toHaveBeenCalledWith(
-      expect.objectContaining({ title, templateId, resourceIds, creatorId }),
+      expect.objectContaining({
+        title,
+        creatorId,
+        templates: expect.arrayContaining([expect.objectContaining({ id: templateIds[0] })]),
+        resources: expect.arrayContaining([]),
+      }),
     );
     expect(response).toStrictEqual(expect.objectContaining({ id: createdSystem.id }));
   });
 
   it('should not create a system when repository fails', async () => {
     // arrange
-    const request = new CreateSystemDto(title, templateId, resourceIds, creatorId);
+    const request = new CreateSystemDto(title, templateIds, resourceIds, creatorId);
 
     jest.spyOn(repository, 'create').mockResolvedValue(null);
 
@@ -73,13 +78,18 @@ describe('SystemsService', () => {
 
     // assert
     expect(repository.create).toHaveBeenCalledWith(
-      expect.objectContaining({ title, templateId, resourceIds, creatorId }),
+      expect.objectContaining({
+        title,
+        creatorId,
+        templates: expect.arrayContaining([expect.objectContaining({ id: templateIds[0] })]),
+        resources: expect.arrayContaining([]),
+      }),
     );
   });
 
   it('should find all systems', async () => {
     // arrange
-    const system = new System(systemId, title, creatorId, templateId, resourceIds);
+    const system = new System(systemId, title, creatorId, [], []);
 
     jest.spyOn(repository, 'findAll').mockResolvedValue([system]);
 
@@ -104,7 +114,7 @@ describe('SystemsService', () => {
 
   it('should find system by id', async () => {
     // arrange
-    const system = new System(systemId, title, creatorId, templateId, resourceIds);
+    const system = new System(systemId, title, creatorId, [], []);
 
     jest.spyOn(repository, 'findById').mockResolvedValue(system);
 
@@ -130,11 +140,12 @@ describe('SystemsService', () => {
     // arrange
     const request = new UpdateSystemDto();
     request.title = 'new title';
+    request.templateIds = [uuid()];
     request.resourceIds = [uuid()];
     request.requesterId = creatorId;
 
-    const systemToUpdate = new System(systemId, title, creatorId, templateId, resourceIds);
-    const updatedSystem = new System(systemId, request.title, creatorId, templateId, request.resourceIds);
+    const systemToUpdate = new System(systemId, title, creatorId, [], []);
+    const updatedSystem = new System(systemId, request.title, creatorId, [], []);
 
     jest.spyOn(repository, 'findById').mockResolvedValue(systemToUpdate);
     jest.spyOn(repository, 'update').mockResolvedValue(updatedSystem);
@@ -146,7 +157,11 @@ describe('SystemsService', () => {
     expect(repository.findById).toHaveBeenCalledWith(updatedSystem.id);
     expect(repository.update).toHaveBeenCalledWith(
       updatedSystem.id,
-      expect.objectContaining({ title: request.title, resourceIds: request.resourceIds }),
+      expect.objectContaining({
+        title: request.title,
+        templates: expect.arrayContaining([expect.objectContaining({ id: request.templateIds[0] })]),
+        resources: expect.arrayContaining([expect.objectContaining({ id: request.resourceIds[0] })]),
+      }),
     );
     expect(response).toStrictEqual(expect.objectContaining({ id: updatedSystem.id }));
   });
@@ -155,6 +170,7 @@ describe('SystemsService', () => {
     // arrange
     const request = new UpdateSystemDto();
     request.title = 'new title';
+    request.templateIds = [uuid()];
     request.resourceIds = [uuid()];
 
     jest.spyOn(repository, 'findById').mockResolvedValue(null);
@@ -172,9 +188,10 @@ describe('SystemsService', () => {
     // arrange
     const request = new UpdateSystemDto();
     request.title = 'new title';
+    request.templateIds = [uuid()];
     request.resourceIds = [uuid()];
     request.requesterId = uuid();
-    const systemToUpdate = new System(systemId, title, creatorId, templateId, resourceIds);
+    const systemToUpdate = new System(systemId, title, creatorId, [], []);
 
     jest.spyOn(repository, 'findById').mockResolvedValue(systemToUpdate);
     jest.spyOn(repository, 'update').mockResolvedValue(null);
@@ -191,9 +208,10 @@ describe('SystemsService', () => {
     // arrange
     const request = new UpdateSystemDto();
     request.title = 'new title';
+    request.templateIds = [uuid()];
     request.resourceIds = [uuid()];
     request.requesterId = creatorId;
-    const systemToUpdate = new System(systemId, title, creatorId, templateId, resourceIds);
+    const systemToUpdate = new System(systemId, title, creatorId, [], []);
 
     jest.spyOn(repository, 'findById').mockResolvedValue(systemToUpdate);
     jest.spyOn(repository, 'update').mockResolvedValue(null);
@@ -205,13 +223,17 @@ describe('SystemsService', () => {
     expect(repository.findById).toHaveBeenCalledWith(systemId);
     expect(repository.update).toHaveBeenCalledWith(
       systemId,
-      expect.objectContaining({ title: request.title, resourceIds: request.resourceIds }),
+      expect.objectContaining({
+        title: request.title,
+        templates: expect.arrayContaining([expect.objectContaining({ id: request.templateIds[0] })]),
+        resources: expect.arrayContaining([expect.objectContaining({ id: request.resourceIds[0] })]),
+      }),
     );
   });
 
   it('should delete a system', async () => {
     // arrange
-    const systemToDelete = new System(systemId, title, creatorId, templateId, resourceIds);
+    const systemToDelete = new System(systemId, title, creatorId, [], []);
 
     jest.spyOn(repository, 'findById').mockResolvedValue(systemToDelete);
     jest.spyOn(repository, 'delete').mockResolvedValue(true);
@@ -239,7 +261,7 @@ describe('SystemsService', () => {
 
   it('should not delete a system when requester is not creator', async () => {
     // arrange
-    const systemToDelete = new System(systemId, title, creatorId, templateId, resourceIds);
+    const systemToDelete = new System(systemId, title, creatorId, [], []);
 
     jest.spyOn(repository, 'findById').mockResolvedValue(systemToDelete);
 
@@ -253,7 +275,7 @@ describe('SystemsService', () => {
 
   it('should not delete system when repository fails', async () => {
     // arrange
-    const systemToDelete = new System(systemId, title, creatorId, templateId, resourceIds);
+    const systemToDelete = new System(systemId, title, creatorId, [], []);
 
     jest.spyOn(repository, 'findById').mockResolvedValue(systemToDelete);
     jest.spyOn(repository, 'delete').mockResolvedValue(false);

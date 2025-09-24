@@ -8,9 +8,19 @@ import {
 import { SYSTEM_REPOSITORY } from '../domain/constants/system.constants';
 import { ISystemRepository } from '../domain/repositories/system.repository.interface';
 import { CreateSystemDto } from './dto/create-system.dto';
-import { SystemResponseDto } from './dto/system-response.dto';
+import {
+  SystemResponseDto,
+  SystemPopulatedResponseDto,
+  TemplatePopulatedResponseDto,
+  ResourcePopulatedResponseDto,
+  FieldPopulatedResponseDto,
+  ResourceItemPopulatedResponseDto,
+} from './dto/system-response.dto';
 import { UpdateSystemDto } from './dto/update-system.dto';
 import { System } from '../domain/entities/system.entity';
+import { Resource } from 'src/app/resources/domain/entities/resource.entity';
+import { ResourceItem } from 'src/app/resources/domain/entities/resource-item.entity';
+import { Template } from 'src/app/templates/domain/entities/template.entity';
 
 const INTERNAL_SERVER_ERROR_MESSAGE = 'Internal Error at System operation. Try again, later.';
 const BAD_REQUEST_MESSAGE = 'Requester is not the Creator.';
@@ -21,7 +31,13 @@ export class SystemsService {
   constructor(@Inject(SYSTEM_REPOSITORY) private readonly repository: ISystemRepository) {}
 
   async create(request: CreateSystemDto): Promise<SystemResponseDto> {
-    const system = new System('', request.title, request.creatorId, request.templateId, request.resourceIds);
+    const system = new System(
+      '',
+      request.title,
+      request.creatorId,
+      this.mapTemplateIdsToTemplates(request.templateIds),
+      this.mapResourcesIdToResources(request.resourceIds),
+    );
 
     const response = await this.repository.create(system);
 
@@ -38,12 +54,12 @@ export class SystemsService {
     return systems.map(system => this.mapToDto(system));
   }
 
-  async findOne(id: string): Promise<SystemResponseDto> {
+  async findOne(id: string): Promise<SystemPopulatedResponseDto> {
     const system = await this.repository.findById(id);
 
     if (!system) throw new NotFoundException(NOT_FOUND_MESSAGE);
 
-    return this.mapToDto(system);
+    return this.mapToPopulatedDto(system);
   }
 
   async update(id: string, request: UpdateSystemDto): Promise<SystemResponseDto> {
@@ -54,7 +70,8 @@ export class SystemsService {
     if (request.requesterId !== system?.creatorId) throw new BadRequestException(BAD_REQUEST_MESSAGE);
 
     system.title = request.title;
-    system.resourceIds = request.resourceIds;
+    system.templates = this.mapTemplateIdsToTemplates(request.templateIds);
+    system.resources = this.mapResourcesIdToResources(request.resourceIds);
 
     const response = await this.repository.update(id, system);
 
@@ -82,8 +99,58 @@ export class SystemsService {
       response.id,
       response.title,
       response.creatorId,
-      response.templateId,
-      response.resourceIds,
+      response.templates.map(template => template.id),
+      response.resources?.map(resource => resource.id) ?? [],
     );
+  }
+
+  private mapToPopulatedDto(response: System): SystemPopulatedResponseDto {
+    return new SystemPopulatedResponseDto(
+      response.id,
+      response.title,
+      response.creatorId,
+      response.templates.map(template => this.mapTemplateToPopulatedDto(template)),
+      response.resources?.map(resource => this.mapResourceToPopulatedDto(resource)) ?? [],
+    );
+  }
+
+  private mapTemplateToPopulatedDto(template: Template): TemplatePopulatedResponseDto {
+    return new TemplatePopulatedResponseDto(
+      template.id,
+      template.title,
+      template.fields.map(field => this.mapFieldToPopulatedDto(field)),
+    );
+  }
+
+  private mapResourceToPopulatedDto(resource: Resource): ResourcePopulatedResponseDto {
+    return new ResourcePopulatedResponseDto(
+      resource.id,
+      resource.name,
+      resource.items.map(item => this.mapResourceItemToPopulatedDto(item)),
+    );
+  }
+
+  private mapFieldToPopulatedDto(field: any): FieldPopulatedResponseDto {
+    return new FieldPopulatedResponseDto(
+      field.id,
+      field.title,
+      field.type,
+      field.fields?.map((subField: any) => this.mapFieldToPopulatedDto(subField)) ?? [],
+      field.key,
+      field.value,
+      field.resourceId,
+    );
+  }
+
+  private mapResourceItemToPopulatedDto(item: ResourceItem): ResourceItemPopulatedResponseDto {
+    return new ResourceItemPopulatedResponseDto(item.id, item.name, item.description, item.props);
+  }
+
+  private mapTemplateIdsToTemplates(templateIds: string[]) {
+    return templateIds.map(templateId => new Template(templateId, '', []));
+  }
+
+  private mapResourcesIdToResources(resourceIds: string[]) {
+    return resourceIds.map(resourceId => new Resource(resourceId, '', []));
   }
 }

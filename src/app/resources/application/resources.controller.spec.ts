@@ -93,7 +93,7 @@ describe('ResourcesController', () => {
 
       const foundResource = await resourceModel.findById(createdResource.id);
       expect(foundResource).toBeDefined();
-      expect(foundResource?.name).toEqual(createResourceDto.name);
+      expect(foundResource?.title).toEqual(createResourceDto.name);
     });
   });
 
@@ -154,7 +154,7 @@ describe('ResourcesController', () => {
       expect(updatedResource.items.length).toBe(0);
 
       const foundResource = await resourceModel.findById(createdResource.id);
-      expect(foundResource?.name).toEqual(updateResourceDto.name);
+      expect(foundResource?.title).toEqual(updateResourceDto.name);
     });
 
     it('should throw NotFoundException if resource to update is not found', async () => {

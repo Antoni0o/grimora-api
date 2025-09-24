@@ -8,7 +8,7 @@ export class ResourceMapper {
   static resourceToDomain(document: ResourceDocument): Resource {
     return new Resource(
       document._id.toString(),
-      document.name,
+      document.title,
       document.resourceItems
         ? document.resourceItems?.map(resourceItem => ResourceMapper.resourceItemToDomain(resourceItem))
         : [],

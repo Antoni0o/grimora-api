@@ -7,7 +7,7 @@ export type ResourceDocument = HydratedDocument<ResourceMongoSchema>;
 @Schema({ timestamps: true, versionKey: false })
 export class ResourceMongoSchema {
   @Prop({ type: String, required: true })
-  name!: string;
+  title!: string;
 
   @Prop({ type: [ResourceItemSchema], required: true, default: [] })
   resourceItems?: ResourceItemMongoSchema[];

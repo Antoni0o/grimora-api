@@ -5,9 +5,10 @@ export class CreateSystemDto {
   @IsNotEmpty()
   title: string;
 
+  @IsArray()
   @IsNotEmpty()
-  @IsMongoId()
-  templateId: string;
+  @IsMongoId({ each: true })
+  templateIds: string[];
 
   @IsArray()
   @IsMongoId({ each: true })
@@ -17,10 +18,10 @@ export class CreateSystemDto {
   @IsUUID()
   creatorId: string;
 
-  constructor(title?: string, templateId?: string, resourceIds?: string[], creatorId?: string) {
+  constructor(title?: string, templateIds?: string[], resourceIds?: string[], creatorId?: string) {
     this.title = title ?? '';
     this.creatorId = creatorId ?? '';
     this.resourceIds = resourceIds ?? [];
-    this.templateId = templateId ?? '';
+    this.templateIds = templateIds ?? [];
   }
 }

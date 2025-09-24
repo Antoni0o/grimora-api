@@ -8,12 +8,12 @@ import { SystemMapper } from './system.mapper';
 
 @Injectable()
 export class SystemRepository implements ISystemRepository {
-  constructor(@InjectModel(SystemMongoSchema.name) private readonly systemModel: Model<SystemDocument>) { }
+  constructor(@InjectModel(SystemMongoSchema.name) private readonly systemModel: Model<SystemDocument>) {}
 
   async findById(id: string): Promise<System | null> {
     if (!Types.ObjectId.isValid(id)) return null;
 
-    const system = await this.systemModel.findById(id).exec();
+    const system = await this.systemModel.findById(id).populate('templates').populate('resources').exec();
 
     if (!system) return null;
 
@@ -32,8 +32,8 @@ export class SystemRepository implements ISystemRepository {
     const createdSystem = await this.systemModel.create({
       title: system.title,
       creatorId: system.creatorId,
-      resources: system.resourceIds,
-      template: system.templateId,
+      resources: this.getResourceIds(system),
+      templates: this.getTemplateIds(system),
     });
 
     if (!createdSystem) return null;
@@ -45,11 +45,14 @@ export class SystemRepository implements ISystemRepository {
     if (!Types.ObjectId.isValid(id)) return null;
 
     const systemToUpdate = await this.systemModel
-      .findByIdAndUpdate(id, {
-        title: system.title,
-        resources: system.resourceIds,
-      },
-        { new: true, runValidators: true }
+      .findByIdAndUpdate(
+        id,
+        {
+          title: system.title,
+          resources: this.getResourceIds(system),
+          templates: this.getTemplateIds(system),
+        },
+        { new: true, runValidators: true },
       )
       .exec();
 
@@ -66,5 +69,13 @@ export class SystemRepository implements ISystemRepository {
     if (!deletedSystem) return false;
 
     return true;
+  }
+
+  private getResourceIds(system: System) {
+    return system.resources ? system.resources.map(resource => resource.id) : [];
+  }
+
+  private getTemplateIds(system: System) {
+    return system.templates.map(template => template.id);
   }
 }

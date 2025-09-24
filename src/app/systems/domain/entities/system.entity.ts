@@ -1,15 +1,18 @@
+import { Resource } from 'src/app/resources/domain/entities/resource.entity';
+import { Template } from 'src/app/templates/domain/entities/template.entity';
+
 export class System {
   id: string;
   title: string;
   creatorId: string;
-  templateId: string;
-  resourceIds?: string[];
+  templates: Template[];
+  resources?: Resource[];
 
-  constructor(id: string, title: string, creatorId: string, templateId: string, resourcesIds?: string[]) {
+  constructor(id: string, title: string, creatorId: string, templates: Template[], resources?: Resource[]) {
     this.id = id;
     this.title = title;
     this.creatorId = creatorId;
-    this.templateId = templateId;
-    this.resourceIds = resourcesIds;
+    this.templates = templates;
+    this.resources = resources;
   }
 }
