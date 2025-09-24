@@ -28,6 +28,26 @@ export class SystemRepository implements ISystemRepository {
     return systems.map(system => SystemMapper.toDomain(system));
   }
 
+  async findByTitle(title: string): Promise<System[] | null> {
+    const systems = await this.systemModel
+      .find({
+        title: { $regex: title, $options: 'i' },
+      })
+      .exec();
+
+    if (!systems) return null;
+
+    return systems.map(system => SystemMapper.toDomain(system));
+  }
+
+  async findByCreatorId(creatorId: string): Promise<System[] | null> {
+    const systems = await this.systemModel.find({ creatorId }).exec();
+
+    if (!systems) return null;
+
+    return systems.map(system => SystemMapper.toDomain(system));
+  }
+
   async create(system: System): Promise<System | null> {
     const createdSystem = await this.systemModel.create({
       title: system.title,

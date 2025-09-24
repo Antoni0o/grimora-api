@@ -29,6 +29,8 @@ describe('SystemsService', () => {
           useValue: <ISystemRepository>{
             findAll: jest.fn(),
             findById: jest.fn(),
+            findByTitle: jest.fn(),
+            findByCreatorId: jest.fn(),
             create: jest.fn(),
             delete: jest.fn(),
             update: jest.fn(),
@@ -110,6 +112,60 @@ describe('SystemsService', () => {
 
     // assert
     expect(repository.findAll).toHaveBeenCalled();
+  });
+
+  it('should find systems by title', async () => {
+    // arrange
+    const title = 'rpg';
+    const system = new System(systemId, title, creatorId, [], []);
+
+    jest.spyOn(repository, 'findByTitle').mockResolvedValue([system]);
+
+    // act
+    const response = await service.findByTitle(title);
+
+    // assert
+    expect(response.length).toBe(1);
+    expect(response.at(0)?.id).toBe(system.id);
+    expect(repository.findByTitle).toHaveBeenCalledWith(title);
+  });
+
+  it('should not find systems by title when repository fails', async () => {
+    // arrange
+    const title = 'rpg';
+    jest.spyOn(repository, 'findByTitle').mockResolvedValue(null);
+
+    // act
+    await expect(service.findByTitle(title)).rejects.toThrow(InternalServerErrorException);
+
+    // assert
+    expect(repository.findByTitle).toHaveBeenCalledWith(title);
+  });
+
+  it('should find systems by creator id', async () => {
+    // arrange
+    const system = new System(systemId, title, creatorId, [], []);
+
+    jest.spyOn(repository, 'findByCreatorId').mockResolvedValue([system]);
+
+    // act
+    const response = await service.findByCreatorId(creatorId);
+
+    // assert
+    expect(response.length).toBe(1);
+    expect(response.at(0)?.id).toBe(system.id);
+    expect(repository.findByCreatorId).toHaveBeenCalledWith(creatorId);
+  });
+
+  it('should not find systems by creator id when repository fails', async () => {
+    // arrange
+    jest.spyOn(repository, 'findByCreatorId').mockResolvedValue(null);
+
+    // act
+    await expect(service.findByCreatorId(creatorId)).rejects.toThrow(InternalServerErrorException);
+
+    // assert
+    expect(repository.findByCreatorId).toHaveBeenCalledWith(creatorId);
   });
 
   it('should find system by id', async () => {

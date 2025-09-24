@@ -54,6 +54,22 @@ export class SystemsService {
     return systems.map(system => this.mapToDto(system));
   }
 
+  async findByTitle(title: string): Promise<SystemResponseDto[]> {
+    const systems = await this.repository.findByTitle(title);
+
+    if (!systems) throw new InternalServerErrorException(INTERNAL_SERVER_ERROR_MESSAGE);
+
+    return systems.map(system => this.mapToDto(system));
+  }
+
+  async findByCreatorId(creatorId: string): Promise<SystemResponseDto[]> {
+    const systems = await this.repository.findByCreatorId(creatorId);
+
+    if (!systems) throw new InternalServerErrorException(INTERNAL_SERVER_ERROR_MESSAGE);
+
+    return systems.map(system => this.mapToDto(system));
+  }
+
   async findOne(id: string): Promise<SystemPopulatedResponseDto> {
     const system = await this.repository.findById(id);
 

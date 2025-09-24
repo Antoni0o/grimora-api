@@ -22,6 +22,16 @@ export class SystemsController {
     return this.systemsService.findAll();
   }
 
+  @Get('title/:title')
+  findByTitle(@Param('title') title: string) {
+    return this.systemsService.findByTitle(title);
+  }
+
+  @Get('creator/me')
+  findByCreatorId(@Session() session: UserSession) {
+    return this.systemsService.findByCreatorId(session.user.id);
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.systemsService.findOne(id);

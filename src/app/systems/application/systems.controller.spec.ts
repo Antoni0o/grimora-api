@@ -132,6 +132,67 @@ describe('SystemsController', () => {
     });
   });
 
+  describe('findByTitle', () => {
+    it('should return systems that match the title pattern', async () => {
+      await createSystem('My RPG System');
+      await createSystem('Another RPG Game');
+      await createSystem('Card Game System');
+
+      const systems = await controller.findByTitle('RPG');
+
+      expect(systems).toBeDefined();
+      expect(systems.length).toEqual(2);
+      expect(systems.every(s => s.title.includes('RPG'))).toBeTruthy();
+    });
+
+    it('should return empty array if no systems match the title', async () => {
+      await createSystem('Card Game System');
+
+      const systems = await controller.findByTitle('RPG');
+
+      expect(systems).toBeDefined();
+      expect(systems.length).toEqual(0);
+    });
+
+    it('should be case insensitive', async () => {
+      await createSystem('My RPG System');
+
+      const systems = await controller.findByTitle('rpg');
+
+      expect(systems).toBeDefined();
+      expect(systems.length).toEqual(1);
+      expect(systems[0].title).toEqual('My RPG System');
+    });
+  });
+
+  describe('findByCreatorId', () => {
+    it('should return systems created by the current user', async () => {
+      const userId1 = uuid();
+      const userId2 = uuid();
+
+      await createSystem('System 1', userId1);
+      await createSystem('System 2', userId1);
+      await createSystem('System 3', userId2);
+
+      userSession.user.id = userId1;
+      const systems = await controller.findByCreatorId(userSession);
+
+      expect(systems).toBeDefined();
+      expect(systems.length).toEqual(2);
+      expect(systems.every(s => s.creatorId === userId1)).toBeTruthy();
+    });
+
+    it('should return empty array if user has no systems', async () => {
+      await createSystem('System 1', uuid());
+
+      userSession.user.id = uuid();
+      const systems = await controller.findByCreatorId(userSession);
+
+      expect(systems).toBeDefined();
+      expect(systems.length).toEqual(0);
+    });
+  });
+
   describe('findOne', () => {
     it('should return a single system by id', async () => {
       const createdSystem = await createSystem('system 1');
