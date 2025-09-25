@@ -86,9 +86,22 @@ describe('SheetsController', () => {
 
   describe('create', () => {
     it('should create a new sheet', async () => {
+      // Criar um template primeiro
+      const templateId = new Types.ObjectId();
+      await templateModel.create({
+        _id: templateId,
+        title: 'Test Template',
+        name: 'Test Template',
+        description: 'Test Template Description',
+        ownerId: userId,
+        elements: [],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+
       const createSheetDto: CreateSheetDto = {
         title: 'Test Sheet',
-        templateId: new Types.ObjectId().toHexString(),
+        templateId: templateId.toHexString(),
         ownerId: uuid(),
         ownerSheetsLimit: 1,
         ownerSheetsCount: 0,
@@ -229,13 +242,22 @@ describe('SheetsController', () => {
     const ownerId = userId ?? uuid();
     userSession.user.id = ownerId;
 
+    const templateId = new Types.ObjectId();
+    await templateModel.create({
+      _id: templateId,
+      title: 'Test Template',
+      fields: [],
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+
     return await controller.create(
       {
         title,
         ownerId,
         ownerSheetsCount: 0,
         ownerSheetsLimit: 1,
-        templateId: new Types.ObjectId().toHexString(),
+        templateId: templateId.toHexString(),
         values: {
           value1: 2212,
         },
