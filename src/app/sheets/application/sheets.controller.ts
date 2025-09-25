@@ -2,6 +2,7 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@n
 import { SheetsService } from './sheets.service';
 import { CreateSheetDto } from './dto/create-sheet.dto';
 import { UpdateSheetDto } from './dto/update-sheet.dto';
+import { SheetPopulatedResponseDto } from './dto/sheet-response.dto';
 import { AuthGuard, Session } from '@thallesp/nestjs-better-auth';
 import { UserSession } from 'src/lib/auth';
 
@@ -25,7 +26,7 @@ export class SheetsController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id') id: string): Promise<SheetPopulatedResponseDto> {
     return this.sheetsService.findOne(id);
   }
 

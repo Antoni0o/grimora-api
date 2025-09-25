@@ -10,7 +10,13 @@ import { UpdateSheetDto } from './dto/update-sheet.dto';
 import { ISheetsRepository } from '../domain/repositories/sheets.repository.interface';
 import { SHEETS_REPOSITORY } from '../domain/constants/sheets.constants';
 import { Sheet } from '../domain/entities/sheet.entity';
-import { SheetResponseDto } from './dto/sheet-response.dto';
+import {
+  SheetResponseDto,
+  SheetPopulatedResponseDto,
+  TemplatePopulatedResponseDto,
+  FieldPopulatedResponseDto,
+} from './dto/sheet-response.dto';
+import { Template } from 'src/app/templates/domain/entities/template.entity';
 
 const INTERNAL_SERVER_ERROR_MESSAGE = 'Internal Error at Sheet operation. Try again, later.';
 const BAD_REQUEST_MESSAGE = 'Requester is not the Owner.';
@@ -21,7 +27,7 @@ export class SheetsService {
   constructor(@Inject(SHEETS_REPOSITORY) private readonly repository: ISheetsRepository) {}
 
   async create(request: CreateSheetDto): Promise<SheetResponseDto> {
-    const sheet = new Sheet('', request.title, request.ownerId, request.templateId, request.values);
+    const sheet = new Sheet('', request.title, request.ownerId, this.mapTemplateIdToTemplate(request), request.values);
 
     if (request.ownerSheetsCount >= request.ownerSheetsLimit) {
       throw new BadRequestException("Owner's sheets limit reached.");
@@ -42,12 +48,12 @@ export class SheetsService {
     return sheets.map(sheet => this.mapToDto(sheet));
   }
 
-  async findOne(id: string): Promise<SheetResponseDto> {
+  async findOne(id: string): Promise<SheetPopulatedResponseDto> {
     const sheet = await this.repository.findById(id);
 
     if (!sheet) throw new NotFoundException(NOT_FOUND_MESSAGE);
 
-    return this.mapToDto(sheet);
+    return this.mapToPopulatedDto(sheet);
   }
 
   async update(id: string, request: UpdateSheetDto): Promise<SheetResponseDto> {
@@ -82,6 +88,40 @@ export class SheetsService {
   }
 
   private mapToDto(response: Sheet): SheetResponseDto {
-    return new SheetResponseDto(response.id, response.title, response.ownerId, response.templateId, response.values);
+    return new SheetResponseDto(response.id, response.title, response.ownerId, response.template.id, response.values);
+  }
+
+  private mapToPopulatedDto(response: Sheet): SheetPopulatedResponseDto {
+    return new SheetPopulatedResponseDto(
+      response.id,
+      response.title,
+      response.ownerId,
+      this.mapTemplateToPopulatedDto(response.template),
+      response.values,
+    );
+  }
+
+  private mapTemplateToPopulatedDto(template: Template): TemplatePopulatedResponseDto {
+    return new TemplatePopulatedResponseDto(
+      template.id,
+      template.title,
+      template.fields.map(field => this.mapFieldToPopulatedDto(field)),
+    );
+  }
+
+  private mapFieldToPopulatedDto(field: any): FieldPopulatedResponseDto {
+    return new FieldPopulatedResponseDto(
+      field.id,
+      field.title,
+      field.type,
+      field.fields?.map((subField: any) => this.mapFieldToPopulatedDto(subField)) ?? [],
+      field.key,
+      field.value,
+      field.resourceId,
+    );
+  }
+
+  private mapTemplateIdToTemplate(request: CreateSheetDto) {
+    return new Template(request.templateId, '', []);
   }
 }

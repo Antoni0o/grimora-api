@@ -3,7 +3,8 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@n
 import { CreateSystemDto } from './dto/create-system.dto';
 import { SystemsService } from './systems.service';
 import { UpdateSystemDto } from './dto/update-system.dto';
-import { AuthGuard, Session, type UserSession } from '@thallesp/nestjs-better-auth';
+import { AuthGuard, Session } from '@thallesp/nestjs-better-auth';
+import { UserSession } from 'src/lib/auth';
 
 @UseGuards(AuthGuard)
 @Controller('systems')

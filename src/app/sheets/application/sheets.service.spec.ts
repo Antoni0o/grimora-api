@@ -8,6 +8,7 @@ import { Sheet } from '../domain/entities/sheet.entity';
 import { BadRequestException, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { v4 as uuid } from 'uuid';
 import { UpdateSheetDto } from './dto/update-sheet.dto';
+import { Template } from 'src/app/templates/domain/entities/template.entity';
 
 describe('SheetsService', () => {
   let service: SheetsService;
@@ -18,6 +19,7 @@ describe('SheetsService', () => {
   const ownerId = 'ownerUUID';
   const title = 'new rpg sheet';
   const values: Record<string, unknown> = { id1: 122 };
+  const template = new Template(templateId, '', []);
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -48,14 +50,14 @@ describe('SheetsService', () => {
     // arrange
     const request = new CreateSheetDto(title, ownerId, 1, 0, templateId, values);
 
-    const createdSheet = new Sheet(sheetId, title, ownerId, templateId, values);
+    const createdSheet = new Sheet(sheetId, title, ownerId, template, values);
     jest.spyOn(repository, 'create').mockResolvedValue(createdSheet);
 
     // act
     const response = await service.create(request);
 
     // assert
-    expect(repository.create).toHaveBeenCalledWith(expect.objectContaining({ title, ownerId, templateId, values }));
+    expect(repository.create).toHaveBeenCalledWith(expect.objectContaining({ title, ownerId, template, values }));
     expect(response).toStrictEqual(expect.objectContaining({ id: createdSheet.id }));
   });
 
@@ -70,7 +72,7 @@ describe('SheetsService', () => {
 
     // assert
     expect(repository.create).toHaveBeenCalledWith(
-      expect.objectContaining({ id: '', title, ownerId, templateId, values }),
+      expect.objectContaining({ id: '', title, ownerId, template, values }),
     );
   });
 
@@ -78,7 +80,7 @@ describe('SheetsService', () => {
     // arrange
     const request = new CreateSheetDto(title, ownerId, 1, 1, templateId, values);
 
-    const createdSheet = new Sheet(sheetId, title, ownerId, templateId, values);
+    const createdSheet = new Sheet(sheetId, title, ownerId, template, values);
     jest.spyOn(repository, 'create').mockResolvedValue(createdSheet);
 
     // act
@@ -90,7 +92,7 @@ describe('SheetsService', () => {
 
   it('should find all sheets', async () => {
     // arrange
-    const sheet = new Sheet(sheetId, title, ownerId, templateId, values);
+    const sheet = new Sheet(sheetId, title, ownerId, template, values);
 
     jest.spyOn(repository, 'findAll').mockResolvedValue([sheet]);
 
@@ -115,7 +117,7 @@ describe('SheetsService', () => {
 
   it('should find sheet by id', async () => {
     // arrange
-    const sheet = new Sheet(sheetId, title, ownerId, templateId, values);
+    const sheet = new Sheet(sheetId, title, ownerId, template, values);
 
     jest.spyOn(repository, 'findById').mockResolvedValue(sheet);
 
@@ -147,10 +149,10 @@ describe('SheetsService', () => {
     };
     request.requesterId = ownerId;
 
-    const sheetToUpdate = new Sheet(sheetId, title, ownerId, templateId, values);
+    const sheetToUpdate = new Sheet(sheetId, title, ownerId, template, values);
     jest.spyOn(repository, 'findById').mockResolvedValue(sheetToUpdate);
 
-    const updatedSheet = new Sheet(sheetId, request.title, ownerId, templateId, request.values);
+    const updatedSheet = new Sheet(sheetId, request.title, ownerId, template, request.values);
     jest.spyOn(repository, 'update').mockResolvedValue(updatedSheet);
 
     // act
@@ -195,7 +197,7 @@ describe('SheetsService', () => {
     };
     request.requesterId = 'anotherUserId';
 
-    const sheetToUpdate = new Sheet(sheetId, title, ownerId, templateId, values);
+    const sheetToUpdate = new Sheet(sheetId, title, ownerId, template, values);
     jest.spyOn(repository, 'findById').mockResolvedValue(sheetToUpdate);
 
     jest.spyOn(repository, 'update').mockResolvedValue(null);
@@ -218,7 +220,7 @@ describe('SheetsService', () => {
     };
     request.requesterId = ownerId;
 
-    const sheetToUpdate = new Sheet(sheetId, title, ownerId, templateId, values);
+    const sheetToUpdate = new Sheet(sheetId, title, ownerId, template, values);
     jest.spyOn(repository, 'findById').mockResolvedValue(sheetToUpdate);
 
     jest.spyOn(repository, 'update').mockResolvedValue(null);
@@ -238,7 +240,7 @@ describe('SheetsService', () => {
     // arrange
     const requesterId = ownerId;
 
-    const sheetToDelete = new Sheet(sheetId, title, ownerId, sheetId, values);
+    const sheetToDelete = new Sheet(sheetId, title, ownerId, template, values);
     jest.spyOn(repository, 'findById').mockResolvedValue(sheetToDelete);
 
     jest.spyOn(repository, 'delete').mockResolvedValue(true);
@@ -266,7 +268,7 @@ describe('SheetsService', () => {
 
   it('should not delete a sheet when requester is not owner', async () => {
     // arrange
-    const sheetToDelete = new Sheet(sheetId, title, ownerId, templateId, values);
+    const sheetToDelete = new Sheet(sheetId, title, ownerId, template, values);
     jest.spyOn(repository, 'findById').mockResolvedValue(sheetToDelete);
 
     // act
@@ -279,7 +281,7 @@ describe('SheetsService', () => {
 
   it('should not delete sheet when repository fails', async () => {
     // arrange
-    const sheetToDelete = new Sheet(sheetId, title, ownerId, templateId, values);
+    const sheetToDelete = new Sheet(sheetId, title, ownerId, template, values);
     jest.spyOn(repository, 'findById').mockResolvedValue(sheetToDelete);
 
     jest.spyOn(repository, 'delete').mockResolvedValue(false);

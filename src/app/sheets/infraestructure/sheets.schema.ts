@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
+import { TemplateDocument } from 'src/app/templates/infraestructure/template.schema';
 
 export type SheetDocument = HydratedDocument<SheetMongoSchema>;
 
@@ -11,8 +12,8 @@ export class SheetMongoSchema {
   @Prop({ required: true })
   ownerId!: string;
 
-  @Prop({ type: Types.ObjectId, ref: 'Template', required: true })
-  template!: Types.ObjectId;
+  @Prop({ type: Types.ObjectId, ref: 'TemplateMongoSchema', required: true })
+  template!: Types.ObjectId | TemplateDocument;
 
   @Prop({ type: Object, required: true })
   values!: Record<string, unknown>;

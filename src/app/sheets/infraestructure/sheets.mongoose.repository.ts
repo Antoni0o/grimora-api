@@ -32,7 +32,7 @@ export class SheetsRepository implements ISheetsRepository {
     const createdSheet = await this.sheetModel.create({
       title: sheet.title,
       ownerId: sheet.ownerId,
-      template: sheet.templateId,
+      template: new Types.ObjectId(sheet.template.id),
       values: sheet.values,
     });
 

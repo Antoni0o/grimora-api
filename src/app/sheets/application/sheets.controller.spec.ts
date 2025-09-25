@@ -11,7 +11,9 @@ import { v4 as uuid } from 'uuid';
 import { CreateSheetDto } from './dto/create-sheet.dto';
 import { NotFoundException } from '@nestjs/common';
 import { UpdateSheetDto } from './dto/update-sheet.dto';
-import { AuthGuard, type UserSession } from '@thallesp/nestjs-better-auth';
+import { AuthGuard } from '@thallesp/nestjs-better-auth';
+import { TemplateMongoSchema, TemplateSchema } from 'src/app/templates/infraestructure/template.schema';
+import { UserSession } from 'src/lib/auth';
 
 describe('SheetsController', () => {
   let controller: SheetsController;
@@ -19,6 +21,7 @@ describe('SheetsController', () => {
   let mongod: MongoMemoryServer;
   let mongoConnection: Connection;
   let sheetModel: Model<SheetMongoSchema>;
+  let templateModel: Model<TemplateMongoSchema>;
 
   const userId = uuid();
   const userSession = <UserSession>{
@@ -32,6 +35,7 @@ describe('SheetsController', () => {
     const uri = mongod.getUri();
     mongoConnection = (await connect(uri)).connection;
     sheetModel = mongoConnection.model(SheetMongoSchema.name, SheetSchema);
+    templateModel = mongoConnection.model(TemplateMongoSchema.name, TemplateSchema);
 
     const module: TestingModule = await Test.createTestingModule({
       controllers: [SheetsController],
@@ -44,6 +48,10 @@ describe('SheetsController', () => {
         {
           provide: getModelToken(SheetMongoSchema.name),
           useValue: sheetModel,
+        },
+        {
+          provide: getModelToken(TemplateMongoSchema.name),
+          useValue: templateModel,
         },
       ],
     })

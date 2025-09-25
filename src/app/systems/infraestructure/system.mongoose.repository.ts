@@ -92,10 +92,10 @@ export class SystemRepository implements ISystemRepository {
   }
 
   private getResourceIds(system: System) {
-    return system.resources ? system.resources.map(resource => resource.id) : [];
+    return system.resources ? system.resources.map(resource => new Types.ObjectId(resource.id)) : [];
   }
 
   private getTemplateIds(system: System) {
-    return system.templates.map(template => template.id);
+    return system.templates.map(template => new Types.ObjectId(template.id));
   }
 }

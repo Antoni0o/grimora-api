@@ -14,8 +14,9 @@ import { CreateSystemDto } from './dto/create-system.dto';
 import { UpdateSystemDto } from './dto/update-system.dto';
 import { SystemsController } from './systems.controller';
 import { SystemsService } from './systems.service';
-import { AuthGuard, type UserSession } from '@thallesp/nestjs-better-auth';
+import { AuthGuard } from '@thallesp/nestjs-better-auth';
 import { LikesService } from 'src/app/likes/application/likes.service';
+import { UserSession } from 'src/lib/auth';
 
 describe('SystemsController', () => {
   let controller: SystemsController;
@@ -112,7 +113,7 @@ describe('SystemsController', () => {
 
       expect(createdSystem).toBeDefined();
       expect(createdSystem.title).toEqual(createSystemDto.title);
-      expect(createdSystem.templateIds).toBeDefined();
+      expect(createdSystem.templateIds).toEqual([new Types.ObjectId(createSystemDto.templateIds[0]).toHexString()]);
       expect(createdSystem.id).toBeDefined();
 
       const foundSystem = await systemModel.findById(createdSystem.id);
