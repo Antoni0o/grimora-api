@@ -25,6 +25,11 @@ export class SheetsController {
     return this.sheetsService.findAll();
   }
 
+  @Get('owner/me')
+  findByOwnerId(@Session() session: UserSession) {
+    return this.sheetsService.findByOwnerId(session.user.id);
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string): Promise<SheetPopulatedResponseDto> {
     return this.sheetsService.findOne(id);

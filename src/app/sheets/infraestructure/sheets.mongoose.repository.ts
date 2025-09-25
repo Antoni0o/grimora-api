@@ -13,7 +13,7 @@ export class SheetsRepository implements ISheetsRepository {
   async findById(id: string): Promise<Sheet | null> {
     if (!Types.ObjectId.isValid(id)) return null;
 
-    const sheet = await this.sheetModel.findById(id).exec();
+    const sheet = await this.sheetModel.findById(id).populate('template').exec();
 
     if (!sheet) return null;
 
@@ -22,6 +22,14 @@ export class SheetsRepository implements ISheetsRepository {
 
   async findAll(): Promise<Sheet[] | null> {
     const sheets = await this.sheetModel.find().exec();
+
+    if (!sheets) return null;
+
+    return sheets.map(sheet => SheetsMapper.toDomain(sheet));
+  }
+
+  async findByOwnerId(ownerId: string): Promise<Sheet[] | null> {
+    const sheets = await this.sheetModel.find({ ownerId }).exec();
 
     if (!sheets) return null;
 

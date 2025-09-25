@@ -48,6 +48,14 @@ export class SheetsService {
     return sheets.map(sheet => this.mapToDto(sheet));
   }
 
+  async findByOwnerId(ownerId: string): Promise<SheetResponseDto[]> {
+    const sheets = await this.repository.findByOwnerId(ownerId);
+
+    if (!sheets) throw new InternalServerErrorException(INTERNAL_SERVER_ERROR_MESSAGE);
+
+    return sheets.map(sheet => this.mapToDto(sheet));
+  }
+
   async findOne(id: string): Promise<SheetPopulatedResponseDto> {
     const sheet = await this.repository.findById(id);
 

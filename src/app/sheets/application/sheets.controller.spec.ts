@@ -128,6 +128,38 @@ describe('SheetsController', () => {
     });
   });
 
+  describe('findByOwnerId', () => {
+    it('should return an array of sheets for the owner', async () => {
+      const ownerId = uuid();
+      const sheet1 = await createSheet('sheet 1', ownerId);
+      const sheet2 = await createSheet('sheet 2', ownerId);
+      await createSheet('sheet 3', uuid());
+
+      userSession.user.id = ownerId;
+
+      const sheets = await controller.findByOwnerId(userSession);
+
+      expect(sheets).toBeDefined();
+      expect(sheets.length).toEqual(2);
+      expect(sheets[0].title).toEqual(sheet1.title);
+      expect(sheets[1].title).toEqual(sheet2.title);
+      expect(sheets[0].ownerId).toEqual(ownerId);
+      expect(sheets[1].ownerId).toEqual(ownerId);
+    });
+
+    it('should return an empty array if the owner has no sheets', async () => {
+      const ownerId = uuid();
+      await createSheet('sheet 1', uuid());
+      await createSheet('sheet 2', uuid());
+
+      userSession.user.id = ownerId;
+
+      const sheets = await controller.findByOwnerId(userSession);
+      expect(sheets).toBeDefined();
+      expect(sheets.length).toEqual(0);
+    });
+  });
+
   describe('findOne', () => {
     it('should return a single sheet by id', async () => {
       const createdSheet = await createSheet('sheet 1');

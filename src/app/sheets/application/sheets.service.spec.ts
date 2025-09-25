@@ -30,6 +30,7 @@ describe('SheetsService', () => {
           useValue: <ISheetsRepository>{
             findAll: jest.fn(),
             findById: jest.fn(),
+            findByOwnerId: jest.fn(),
             create: jest.fn(),
             delete: jest.fn(),
             update: jest.fn(),
@@ -113,6 +114,35 @@ describe('SheetsService', () => {
 
     // assert
     expect(repository.findAll).toHaveBeenCalled();
+  });
+
+  it('should find sheets by owner id', async () => {
+    // arrange
+    const sheet1 = new Sheet(sheetId, title, ownerId, template, values);
+    const sheet2 = new Sheet(new Types.ObjectId().toHexString(), 'sheet 2', ownerId, template, values);
+
+    jest.spyOn(repository, 'findByOwnerId').mockResolvedValue([sheet1, sheet2]);
+
+    // act
+    const response = await service.findByOwnerId(ownerId);
+
+    // assert
+    expect(response.length).toBe(2);
+    expect(response.at(0)?.id).toBe(sheet1.id);
+    expect(response.at(1)?.id).toBe(sheet2.id);
+    expect(response.at(0)?.ownerId).toBe(ownerId);
+    expect(response.at(1)?.ownerId).toBe(ownerId);
+  });
+
+  it('should not find sheets by owner id when repository fails', async () => {
+    // arrange
+    jest.spyOn(repository, 'findByOwnerId').mockResolvedValue(null);
+
+    // act
+    await expect(service.findByOwnerId(ownerId)).rejects.toThrow(InternalServerErrorException);
+
+    // assert
+    expect(repository.findByOwnerId).toHaveBeenCalledWith(ownerId);
   });
 
   it('should find sheet by id', async () => {
