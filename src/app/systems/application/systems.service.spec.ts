@@ -9,10 +9,12 @@ import { BadRequestException, InternalServerErrorException, NotFoundException } 
 import { UpdateSystemDto } from './dto/update-system.dto';
 import { v4 as uuid } from 'uuid';
 import { Types } from 'mongoose';
+import { LikesService } from '../../likes/application/likes.service';
 
 describe('SystemsService', () => {
   let service: SystemsService;
   let repository: ISystemRepository;
+  let likesService: jest.Mocked<LikesService>;
 
   const resourceIds = [];
   const templateIds = [new Types.ObjectId().toHexString()];
@@ -21,6 +23,10 @@ describe('SystemsService', () => {
   const systemId = new Types.ObjectId().toHexString();
 
   beforeEach(async () => {
+    const mockLikesService = {
+      deleteAllLikesForEntity: jest.fn(),
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         SystemsService,
@@ -36,11 +42,16 @@ describe('SystemsService', () => {
             update: jest.fn(),
           },
         },
+        {
+          provide: LikesService,
+          useValue: mockLikesService,
+        },
       ],
     }).compile();
 
     service = module.get<SystemsService>(SystemsService);
     repository = module.get<ISystemRepository>(SYSTEM_REPOSITORY);
+    likesService = module.get(LikesService);
   });
 
   it('should be defined', () => {
@@ -293,12 +304,14 @@ describe('SystemsService', () => {
 
     jest.spyOn(repository, 'findById').mockResolvedValue(systemToDelete);
     jest.spyOn(repository, 'delete').mockResolvedValue(true);
+    likesService.deleteAllLikesForEntity.mockResolvedValue(undefined);
 
     // act
     const response = await service.delete(systemId, creatorId);
 
     // assert
     expect(repository.findById).toHaveBeenCalledWith(systemId);
+    expect(likesService.deleteAllLikesForEntity).toHaveBeenCalledWith('system', systemId);
     expect(repository.delete).toHaveBeenCalledWith(systemId);
     expect(response).toBe(true);
   });
@@ -335,12 +348,14 @@ describe('SystemsService', () => {
 
     jest.spyOn(repository, 'findById').mockResolvedValue(systemToDelete);
     jest.spyOn(repository, 'delete').mockResolvedValue(false);
+    likesService.deleteAllLikesForEntity.mockResolvedValue(undefined);
 
     // act
     await expect(service.delete(systemId, creatorId)).rejects.toThrow(InternalServerErrorException);
 
     // assert
     expect(repository.findById).toHaveBeenCalledWith(systemId);
+    expect(likesService.deleteAllLikesForEntity).toHaveBeenCalledWith('system', systemId);
     expect(repository.delete).toHaveBeenCalledWith(systemId);
   });
 });

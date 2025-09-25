@@ -15,6 +15,7 @@ import { UpdateSystemDto } from './dto/update-system.dto';
 import { SystemsController } from './systems.controller';
 import { SystemsService } from './systems.service';
 import { AuthGuard, type UserSession } from '@thallesp/nestjs-better-auth';
+import { LikesService } from 'src/app/likes/application/likes.service';
 
 describe('SystemsController', () => {
   let controller: SystemsController;
@@ -40,10 +41,18 @@ describe('SystemsController', () => {
     templateModel = mongoConnection.model(TemplateMongoSchema.name, TemplateSchema);
     resourceModel = mongoConnection.model(ResourceMongoSchema.name, ResourceSchema);
 
+    const mockLikesService = {
+      deleteAllLikesForEntity: jest.fn(),
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       controllers: [SystemsController],
       providers: [
         SystemsService,
+        {
+          provide: LikesService,
+          useValue: mockLikesService,
+        },
         {
           provide: SYSTEM_REPOSITORY,
           useClass: SystemRepository,

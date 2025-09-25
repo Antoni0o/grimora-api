@@ -21,6 +21,7 @@ import { System } from '../domain/entities/system.entity';
 import { Resource } from 'src/app/resources/domain/entities/resource.entity';
 import { ResourceItem } from 'src/app/resources/domain/entities/resource-item.entity';
 import { Template } from 'src/app/templates/domain/entities/template.entity';
+import { LikesService } from '../../likes/application/likes.service';
 
 const INTERNAL_SERVER_ERROR_MESSAGE = 'Internal Error at System operation. Try again, later.';
 const BAD_REQUEST_MESSAGE = 'Requester is not the Creator.';
@@ -28,7 +29,10 @@ const NOT_FOUND_MESSAGE = 'System not found.';
 
 @Injectable()
 export class SystemsService {
-  constructor(@Inject(SYSTEM_REPOSITORY) private readonly repository: ISystemRepository) {}
+  constructor(
+    @Inject(SYSTEM_REPOSITORY) private readonly repository: ISystemRepository,
+    private readonly likesService: LikesService,
+  ) {}
 
   async create(request: CreateSystemDto): Promise<SystemResponseDto> {
     const system = new System(
@@ -102,6 +106,8 @@ export class SystemsService {
     if (!system) throw new NotFoundException(NOT_FOUND_MESSAGE);
 
     if (userId !== system?.creatorId) throw new BadRequestException(BAD_REQUEST_MESSAGE);
+
+    await this.likesService.deleteAllLikesForEntity('system', id);
 
     const response = await this.repository.delete(id);
 

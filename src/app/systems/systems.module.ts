@@ -7,6 +7,7 @@ import { TemplateMongoSchema, TemplateSchema } from '../templates/infraestructur
 import { ResourceMongoSchema, ResourceSchema } from '../resources/infraestructure/resources.schema';
 import { SYSTEM_REPOSITORY } from './domain/constants/system.constants';
 import { SystemRepository } from './infraestructure/system.mongoose.repository';
+import { LikesModule } from '../likes/likes.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { SystemRepository } from './infraestructure/system.mongoose.repository';
       { name: TemplateMongoSchema.name, schema: TemplateSchema },
       { name: ResourceMongoSchema.name, schema: ResourceSchema },
     ]),
+    LikesModule,
   ],
   controllers: [SystemsController],
   providers: [
