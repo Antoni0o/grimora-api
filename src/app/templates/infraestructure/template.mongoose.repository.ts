@@ -32,6 +32,8 @@ export class TemplatesRepository implements ITemplateRepository {
     const createdTemplate = await this.templateModel.create({
       title: template.title,
       fields: template.fields,
+      usedColumns: template.usedColumns,
+      usedRows: template.usedRows,
     });
 
     if (!createdTemplate) return null;
@@ -48,6 +50,8 @@ export class TemplatesRepository implements ITemplateRepository {
         {
           title: template.title,
           fields: template.fields,
+          usedColumns: template.usedColumns,
+          usedRows: template.usedRows,
         },
         { new: true, runValidators: true },
       )

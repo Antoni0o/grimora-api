@@ -1,5 +1,5 @@
-import { IsArray, IsEnum, IsMongoId, IsNotEmpty, IsOptional, IsString } from "class-validator";
-import { FieldType } from "../../domain/enums/field-type.enum";
+import { IsArray, IsEnum, IsMongoId, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { FieldType } from '../../domain/enums/field-type.enum';
 
 export class FieldRequestDto {
   @IsString()
@@ -31,14 +31,24 @@ export class FieldRequestDto {
   @IsOptional()
   resourceId?: string;
 
+  @IsArray()
+  @IsNotEmpty()
+  columns: number[];
+
+  @IsArray()
+  @IsNotEmpty()
+  rows: number[];
+
   constructor(
     title: string,
     type: FieldType,
+    columns: number[],
+    rows: number[],
     id?: string,
     fields?: FieldRequestDto[],
     key?: string,
     value?: string,
-    resourceId?: string
+    resourceId?: string,
   ) {
     this.title = title;
     this.type = type;
@@ -47,5 +57,7 @@ export class FieldRequestDto {
     this.key = key;
     this.value = value;
     this.resourceId = resourceId;
+    this.columns = columns;
+    this.rows = rows;
   }
 }

@@ -1,1 +1,4 @@
 export const TEMPLATES_REPOSITORY = 'TEMPLATES_REPOSITORY';
+
+export const ROWS_LIMIT = 20;
+export const COLUMNS_LIMIT = 6;

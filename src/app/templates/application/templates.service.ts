@@ -1,4 +1,10 @@
-import { Inject, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateTemplateDto } from './dto/create-template.dto';
 import { UpdateTemplateDto } from './dto/update-template.dto';
 import { TEMPLATES_REPOSITORY } from '../domain/constants/template.constants';
@@ -19,13 +25,24 @@ export class TemplatesService {
   constructor(@Inject(TEMPLATES_REPOSITORY) private readonly repository: ITemplateRepository) {}
 
   async create(request: CreateTemplateDto): Promise<TemplateResponseDto> {
-    const template = new Template('', request.title, this.mapFields(request.fields));
+    const template = new Template('', request.title, [], [], []);
+    this.addFields(request.fields, template);
 
     const response = await this.repository.create(template);
 
     if (!response) throw new InternalServerErrorException(INTERNAL_SERVER_ERROR_MESSAGE);
 
     return this.mapToDto(response);
+  }
+
+  private addFields(fields: FieldRequestDto[], template: Template) {
+    fields.forEach(field => {
+      const fieldData: FieldData = this.mapToFieldData(field);
+
+      const response = template.addField(fieldData);
+
+      if (response == null) throw new BadRequestException('Field cannot be added to the template.');
+    });
   }
 
   async findAll(): Promise<TemplateResponseDto[]> {
@@ -50,13 +67,33 @@ export class TemplatesService {
     if (!template) throw new NotFoundException(NOT_FOUND_MESSAGE);
 
     template.title = request.title;
-    template.fields = this.mapFields(request.fields);
+    this.updateFields(request.fields, template);
 
     const response = await this.repository.update(id, template);
 
     if (!response) throw new InternalServerErrorException(INTERNAL_SERVER_ERROR_MESSAGE);
 
     return response;
+  }
+
+  private updateFields(fields: FieldRequestDto[], template: Template) {
+    let errors = 0;
+
+    fields.forEach(field => {
+      const fieldData: FieldData = this.mapToFieldData(field);
+
+      if (!field.id) {
+        const response = template.addField(fieldData);
+
+        if (response == null) errors++;
+      } else {
+        const response = template.updateField(field.id, fieldData);
+
+        if (response == null) errors++;
+      }
+    });
+
+    if (errors > 0) throw new BadRequestException('Some Fields are invalid.');
   }
 
   async delete(id: string): Promise<boolean> {
@@ -71,14 +108,6 @@ export class TemplatesService {
     return response;
   }
 
-  private mapFields(fields: FieldRequestDto[]): Field[] {
-    return fields.map(field => {
-      const fieldData: FieldData = this.mapToFieldData(field);
-
-      return FieldFactory.create(fieldData);
-    });
-  }
-
   private mapToFieldData(field: FieldRequestDto): FieldData {
     return {
       id: field.id || '',
@@ -88,6 +117,8 @@ export class TemplatesService {
       value: field.value,
       resourceId: field.resourceId,
       fields: field.fields ? field.fields.map(child => this.mapToFieldData(child)) : undefined,
+      columns: field.columns,
+      rows: field.rows,
     };
   }
 
