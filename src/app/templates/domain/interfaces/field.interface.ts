@@ -1,4 +1,5 @@
 import { FieldType } from '../enums/field-type.enum';
+import { Position } from '../entities/position.entity';
 
 export interface FieldData {
   id: string;
@@ -8,6 +9,5 @@ export interface FieldData {
   key?: string;
   value?: string;
   resourceId?: string;
-  columns: number[];
-  rows: number[];
+  positions: Position[];
 }

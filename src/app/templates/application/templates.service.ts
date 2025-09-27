@@ -13,8 +13,8 @@ import { Template } from '../domain/entities/template.entity';
 import { FieldData } from '../domain/interfaces/field.interface';
 import { FieldRequestDto } from './dto/field-request.dto';
 import { TemplateResponseDto } from './dto/template-response.dto';
-import { FieldResponseDto } from './dto/field-response.dto';
 import { TemplateDomainError, TemplateDomainResult } from '../domain/types/template-domain-result.types';
+import { Position } from '../domain/entities/position.entity';
 
 const INTERNAL_SERVER_ERROR_MESSAGE = 'Internal Error at Template operation. Try again, later.';
 const NOT_FOUND_MESSAGE = 'Template not found.';
@@ -24,7 +24,7 @@ export class TemplatesService {
   constructor(@Inject(TEMPLATES_REPOSITORY) private readonly repository: ITemplateRepository) {}
 
   async create(request: CreateTemplateDto): Promise<TemplateResponseDto> {
-    const template = new Template('', request.title, [], [], []);
+    const template = new Template('', request.title, [], []);
     this.addFields(request.fields, template);
 
     const response = await this.repository.create(template);
@@ -71,8 +71,7 @@ export class TemplatesService {
       existingTemplate.id,
       request.title,
       existingTemplate.fields,
-      existingTemplate.usedColumns,
-      existingTemplate.usedRows,
+      existingTemplate.usedPositions,
     );
 
     this.updateFields(request.fields, updatedTemplate);
@@ -146,8 +145,7 @@ export class TemplatesService {
       value: field.value,
       resourceId: field.resourceId,
       fields: field.fields ? field.fields.map(child => this.mapToFieldData(child)) : undefined,
-      columns: field.columns,
-      rows: field.rows,
+      positions: field.positions?.map(pos => new Position(pos.row, pos.col)) || [],
     };
   }
 
@@ -155,7 +153,7 @@ export class TemplatesService {
     return new TemplateResponseDto(
       template.id,
       template.title,
-      template.fields.map(field => new FieldResponseDto(field.id, field.title, field.type)),
+      template.fields.map(field => field.toDto()),
     );
   }
 }

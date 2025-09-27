@@ -5,41 +5,36 @@ import { FieldData } from '../interfaces/field.interface';
 import { TemplateDomainError, TemplateDomainResult, SlotValidationResult } from '../types/template-domain-result.types';
 import { Field } from './fields/field.entity';
 import { GroupField } from './fields/group-field.entity';
+import { Position } from './position.entity';
 
 export class Template {
   readonly id: string;
   readonly title: string;
   private _fields: Field[] = [];
-  private _usedColumns: number[] = [];
-  private _usedRows: number[] = [];
+  private _usedPositions: Position[] = [];
 
-  constructor(id: string, title: string, fields: Field[] = [], usedColumns: number[] = [], usedRows: number[] = []) {
+  constructor(id: string, title: string, fields: Field[] = [], usedPositions: Position[] = []) {
     this.id = id;
     this.title = title;
     this._fields = fields;
-    this._usedColumns = usedColumns;
-    this._usedRows = usedRows;
+    this._usedPositions = usedPositions;
   }
 
   get fields(): Field[] {
     return [...this._fields];
   }
 
-  get usedColumns(): number[] {
-    return [...this._usedColumns];
-  }
-
-  get usedRows(): number[] {
-    return [...this._usedRows];
+  get usedPositions(): Position[] {
+    return [...this._usedPositions];
   }
 
   addField(fieldData: FieldData): TemplateDomainResult {
-    const validationResult = this.validateFieldSlots(fieldData);
+    const validationResult = this.validateFieldPositions(fieldData);
     if (validationResult.error !== TemplateDomainError.None) {
       return { error: validationResult.error };
     }
 
-    this.occupyFieldSlots(fieldData, validationResult.occupiedSlots!);
+    this.occupyFieldPositions(fieldData);
     const createdField = FieldFactory.create(fieldData);
     this._fields.push(createdField);
 
@@ -52,90 +47,70 @@ export class Template {
       return { error: TemplateDomainError.FieldNotFound };
     }
 
-    const originalSlots = this.getFieldOccupiedSlots(existingField);
-    this.freeSlots(originalSlots);
+    const originalPositions = [...existingField.positions];
+    this.freePositions(originalPositions);
 
-    const validationResult = this.validateFieldSlots(newFieldData, existingField);
+    const validationResult = this.validateFieldPositions(newFieldData);
     if (validationResult.error !== TemplateDomainError.None) {
-      this.occupySlots(originalSlots);
+      this.occupyPositions(originalPositions);
       return { error: validationResult.error };
     }
 
-    this.occupyFieldSlots(newFieldData, validationResult.occupiedSlots!);
+    this.occupyFieldPositions(newFieldData);
     this.updateExistingFieldProperties(existingField, newFieldData);
 
     return { error: TemplateDomainError.None, field: existingField };
   }
 
-  private validateFieldSlots(fieldData: FieldData, existingField?: Field): SlotValidationResult {
+  private validateFieldPositions(fieldData: FieldData): SlotValidationResult {
     if (this.isGroupField(fieldData)) {
-      return this.validateGroupFieldSlots(fieldData);
+      return this.validateGroupFieldPositions(fieldData);
     }
-    return this.validateCommonFieldSlots(fieldData, existingField);
+    return this.validateCommonFieldPositions(fieldData);
   }
 
-  private validateGroupFieldSlots(groupData: FieldData): SlotValidationResult {
+  private validateGroupFieldPositions(groupData: FieldData): SlotValidationResult {
     if (!groupData.fields) {
       return { error: TemplateDomainError.None, occupiedSlots: [] };
     }
 
-    const allOccupiedSlots: number[] = [];
-
     for (const childField of groupData.fields) {
       if (this.isGroupField(childField)) {
-        const nestedGroupValidation = this.validateGroupFieldSlots(childField);
+        const nestedGroupValidation = this.validateGroupFieldPositions(childField);
         if (nestedGroupValidation.error !== TemplateDomainError.None) {
           return { error: nestedGroupValidation.error };
         }
-        allOccupiedSlots.push(...nestedGroupValidation.occupiedSlots!);
       } else {
-        const columnValidation = this.validateSlotLimitsAndConflicts(childField.columns, true);
-        if (columnValidation !== TemplateDomainError.None) {
-          return { error: columnValidation };
+        const positionValidation = this.validatePositions(childField.positions);
+        if (positionValidation !== TemplateDomainError.None) {
+          return { error: positionValidation };
         }
-
-        const rowValidation = this.validateSlotLimitsAndConflicts(childField.rows, false);
-        if (rowValidation !== TemplateDomainError.None) {
-          return { error: rowValidation };
-        }
-
-        allOccupiedSlots.push(...childField.columns, ...childField.rows);
       }
     }
 
-    return { error: TemplateDomainError.None, occupiedSlots: allOccupiedSlots };
+    return { error: TemplateDomainError.None, occupiedSlots: [] };
   }
 
-  private validateCommonFieldSlots(fieldData: FieldData, existingField?: Field): SlotValidationResult {
-    const columnsToValidate = fieldData.columns || existingField?.columns || [];
-    const rowsToValidate = fieldData.rows || existingField?.rows || [];
-
-    const columnValidation = this.validateSlotLimitsAndConflicts(columnsToValidate, true);
-    if (columnValidation !== TemplateDomainError.None) {
-      return { error: columnValidation };
+  private validateCommonFieldPositions(fieldData: FieldData): SlotValidationResult {
+    const positionValidation = this.validatePositions(fieldData.positions);
+    if (positionValidation !== TemplateDomainError.None) {
+      return { error: positionValidation };
     }
 
-    const rowValidation = this.validateSlotLimitsAndConflicts(rowsToValidate, false);
-    if (rowValidation !== TemplateDomainError.None) {
-      return { error: rowValidation };
-    }
-
-    return {
-      error: TemplateDomainError.None,
-      occupiedSlots: [...columnsToValidate, ...rowsToValidate],
-    };
+    return { error: TemplateDomainError.None, occupiedSlots: [] };
   }
 
-  private validateSlotLimitsAndConflicts(slots: number[], isColumn: boolean): TemplateDomainError {
-    const limit = isColumn ? COLUMNS_LIMIT : ROWS_LIMIT;
-    const usedSlots = isColumn ? this._usedColumns : this._usedRows;
-
-    for (const slot of slots) {
-      if (this.exceedsLimit(slot, limit)) {
-        return isColumn ? TemplateDomainError.ColumnLimitExceeded : TemplateDomainError.RowLimitExceeded;
+  private validatePositions(positions: Position[]): TemplateDomainError {
+    for (const position of positions) {
+      if (this.exceedsRowLimit(position.row)) {
+        return TemplateDomainError.RowLimitExceeded;
       }
 
-      if (this.hasSlotConflict(slot, usedSlots)) {
+      if (this.exceedsColumnLimit(position.col)) {
+        return TemplateDomainError.ColumnLimitExceeded;
+      }
+
+      if (this.hasPositionConflict(position)) {
         return TemplateDomainError.CommonFieldSlotConflict;
       }
     }
@@ -143,46 +118,36 @@ export class Template {
     return TemplateDomainError.None;
   }
 
-  private occupyFieldSlots(fieldData: FieldData, occupiedSlots: number[]): void {
+  private occupyFieldPositions(fieldData: FieldData): void {
     if (this.isGroupField(fieldData) && fieldData.fields) {
       for (const childField of fieldData.fields) {
         if (this.isGroupField(childField)) {
-          this.occupyFieldSlots(childField, []);
+          this.occupyFieldPositions(childField);
         } else {
-          this._usedColumns.push(...childField.columns);
-          this._usedRows.push(...childField.rows);
+          this.occupyPositions(childField.positions);
         }
       }
     } else {
-      this._usedColumns.push(...fieldData.columns);
-      this._usedRows.push(...fieldData.rows);
+      this.occupyPositions(fieldData.positions);
     }
   }
 
-  private occupySlots(slots: { columns: number[]; rows: number[] }): void {
-    this._usedColumns.push(...slots.columns);
-    this._usedRows.push(...slots.rows);
+  private occupyPositions(positions: Position[]): void {
+    this._usedPositions.push(...positions);
   }
 
-  private freeSlots(slots: { columns: number[]; rows: number[] }): void {
-    this._usedColumns = this._usedColumns.filter(col => !slots.columns.includes(col));
-    this._usedRows = this._usedRows.filter(row => !slots.rows.includes(row));
+  private freePositions(positions: Position[]): void {
+    this._usedPositions = this._usedPositions.filter(usedPos => !positions.some(pos => pos.equals(usedPos)));
   }
 
   private findFieldById(fieldId: string): Field | undefined {
     return this._fields.find(field => field.id === fieldId);
   }
 
-  private getFieldOccupiedSlots(field: Field): { columns: number[]; rows: number[] } {
-    return {
-      columns: [...field.columns],
-      rows: [...field.rows],
-    };
-  }
-
   private updateExistingFieldProperties(existingField: Field, newData: FieldData): void {
     existingField.title = newData.title || existingField.title;
     existingField.type = newData.type || existingField.type;
+    existingField.positions = [...newData.positions];
 
     if (this.isGroupField(newData) && newData.fields && this.isGroupFieldEntity(existingField)) {
       existingField.fields = newData.fields.map(fieldData => FieldFactory.create(fieldData));
@@ -197,11 +162,15 @@ export class Template {
     return field.type === FieldType.GROUP;
   }
 
-  private exceedsLimit(slot: number, limit: number): boolean {
-    return slot > limit;
+  private exceedsRowLimit(row: number): boolean {
+    return row > ROWS_LIMIT || row < 1;
   }
 
-  private hasSlotConflict(slot: number, usedSlots: number[]): boolean {
-    return usedSlots.includes(slot);
+  private exceedsColumnLimit(col: number): boolean {
+    return col > COLUMNS_LIMIT || col < 1;
+  }
+
+  private hasPositionConflict(position: Position): boolean {
+    return this._usedPositions.some(usedPos => usedPos.equals(position));
   }
 }

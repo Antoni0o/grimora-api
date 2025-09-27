@@ -1,8 +1,12 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument, SchemaDefinitionProperty, Types } from 'mongoose';
+import { HydratedDocument, Types } from 'mongoose';
 import { FieldType } from '../domain/enums/field-type.enum';
-import { Field } from '../domain/entities/fields/field.entity';
 import { COLUMNS_LIMIT, ROWS_LIMIT } from '../domain/constants/template.constants';
+
+export interface PositionSchema {
+  row: number;
+  col: number;
+}
 
 export type FieldDocument = HydratedDocument<FieldMongoSchema>;
 
@@ -27,25 +31,38 @@ export class FieldMongoSchema {
   @Prop({ type: String, required: false })
   resourceId?: string;
 
-  @Prop({ type: [Number], required: true, default: [] })
-  columns?: number[];
-
-  @Prop({ type: [Number], required: true, default: [] })
-  rows?: number[];
+  @Prop({
+    type: [
+      {
+        row: { type: Number, required: true },
+        col: { type: Number, required: true },
+      },
+    ],
+    required: true,
+    default: [],
+    validate: {
+      validator: function (positions: PositionSchema[]) {
+        return positions.every(
+          pos => pos.row >= 1 && pos.row <= ROWS_LIMIT && pos.col >= 1 && pos.col <= COLUMNS_LIMIT,
+        );
+      },
+      message: `Position values must be between 1 and ${ROWS_LIMIT} for rows and 1 and ${COLUMNS_LIMIT} for columns`,
+    },
+  })
+  positions!: PositionSchema[];
 
   createdAt!: Date;
   updatedAt!: Date;
 }
 
 export const FieldSchema = SchemaFactory.createForClass(FieldMongoSchema);
+
 FieldSchema.add({
   fields: {
     type: [FieldSchema],
     default: [],
     required: false,
   },
-} satisfies {
-  fields: SchemaDefinitionProperty<FieldMongoSchema[] | undefined>;
 });
 
 export type TemplateDocument = HydratedDocument<TemplateMongoSchema>;
@@ -59,30 +76,24 @@ export class TemplateMongoSchema {
   fields?: FieldMongoSchema[];
 
   @Prop({
-    type: [Number],
+    type: [
+      {
+        row: { type: Number, required: true },
+        col: { type: Number, required: true },
+      },
+    ],
     required: true,
     default: [],
     validate: {
-      validator: function (v: number[]) {
-        return v.every(col => col >= 1 && col <= COLUMNS_LIMIT);
+      validator: function (positions: PositionSchema[]) {
+        return positions.every(
+          pos => pos.row >= 1 && pos.row <= ROWS_LIMIT && pos.col >= 1 && pos.col <= COLUMNS_LIMIT,
+        );
       },
-      message: `Column values must be between 1 and ${COLUMNS_LIMIT}`,
+      message: `Position values must be between 1 and ${ROWS_LIMIT} for rows and 1 and ${COLUMNS_LIMIT} for columns`,
     },
   })
-  usedColumns!: number[];
-
-  @Prop({
-    type: [Number],
-    required: true,
-    default: [],
-    validate: {
-      validator: function (v: number[]) {
-        return v.every(row => row >= 1 && row <= ROWS_LIMIT);
-      },
-      message: `Row values must be between 1 and ${ROWS_LIMIT}`,
-    },
-  })
-  usedRows!: number[];
+  usedPositions!: PositionSchema[];
 
   createdAt!: Date;
   updatedAt!: Date;

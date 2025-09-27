@@ -5,6 +5,7 @@ import { Types } from 'mongoose';
 import { FieldMongoSchema, TemplateDocument } from 'src/app/templates/infraestructure/template.schema';
 import { FieldFactory } from 'src/app/templates/domain/factories/field.factory';
 import { FieldData } from 'src/app/templates/domain/interfaces/field.interface';
+import { Position } from 'src/app/templates/domain/entities/position.entity';
 
 export class SheetsMapper {
   static toDomain(document: SheetDocument): Sheet {
@@ -19,7 +20,7 @@ export class SheetsMapper {
 
   private static mapTemplate(template: Types.ObjectId | TemplateDocument) {
     if (template instanceof Types.ObjectId) {
-      return new Template(template.toHexString(), '', []);
+      return new Template(template.toHexString(), '', [], []);
     } else {
       return new Template(
         template._id?.toString?.() ?? '',
@@ -29,6 +30,7 @@ export class SheetsMapper {
 
           return FieldFactory.create(fieldData);
         }) || [],
+        template.usedPositions?.map(pos => new Position(pos.row, pos.col)) || [],
       );
     }
   }
@@ -42,6 +44,7 @@ export class SheetsMapper {
       key: field.key || undefined,
       value: field.value || undefined,
       resourceId: field.resourceId || undefined,
+      positions: field.positions?.map(pos => new Position(pos.row, pos.col)) || [],
     };
   }
 }

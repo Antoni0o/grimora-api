@@ -3,6 +3,7 @@ import { FieldData } from '../interfaces/field.interface';
 import { FieldType } from '../enums/field-type.enum';
 import { NumberField } from '../entities/fields/number-field.entity';
 import { GroupField } from '../entities/fields/group-field.entity';
+import { Position } from '../entities/position.entity';
 
 describe('FieldFactory', () => {
   it('should create a field of the correct type', () => {
@@ -10,8 +11,7 @@ describe('FieldFactory', () => {
       id: '1',
       title: 'Char Age',
       type: FieldType.NUMBER,
-      columns: [1],
-      rows: [1],
+      positions: [new Position(1, 1)],
     };
 
     const field = FieldFactory.create(fieldData);
@@ -23,6 +23,7 @@ describe('FieldFactory', () => {
     expect(field.type).toBe(FieldType.NUMBER);
 
     expect(field).toBeInstanceOf(NumberField);
+    expect(field.positions).toEqual([expect.objectContaining({ row: 1, col: 1 })]);
   });
 
   it('should create a group field of the correct type', () => {
@@ -30,15 +31,13 @@ describe('FieldFactory', () => {
       id: 'group1',
       title: 'Char Information',
       type: FieldType.GROUP,
-      columns: [1],
-      rows: [1],
+      positions: [new Position(1, 1)],
       fields: [
         {
           id: 'field1',
           title: 'Char Age',
           type: FieldType.NUMBER,
-          columns: [1],
-          rows: [1],
+          positions: [new Position(2, 2)],
         },
       ],
     };
@@ -50,6 +49,7 @@ describe('FieldFactory', () => {
     expect(field).toBeInstanceOf(GroupField);
     expect(field.id).toBe('group1');
     expect(field.type).toBe(FieldType.GROUP);
+    expect(field.positions).toEqual([expect.objectContaining({ row: 1, col: 1 })]);
 
     const groupField = field as GroupField;
     expect(groupField.fields).toHaveLength(1);
@@ -58,5 +58,6 @@ describe('FieldFactory', () => {
     expect(childField).toBeInstanceOf(NumberField);
     expect(childField.id).toBe('field1');
     expect(childField.type).toBe(FieldType.NUMBER);
+    expect(childField.positions).toEqual([expect.objectContaining({ row: 2, col: 2 })]);
   });
 });

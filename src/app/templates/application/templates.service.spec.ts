@@ -12,6 +12,8 @@ import { FieldFactory } from '../domain/factories/field.factory';
 import { TemplateResponseDto } from './dto/template-response.dto';
 import { InternalServerErrorException, NotFoundException, BadRequestException } from '@nestjs/common';
 import { UpdateTemplateDto } from './dto/update-template.dto';
+import { Position } from '../domain/entities/position.entity';
+import { PositionDto } from './dto/position.dto';
 
 describe('TemplatesService', () => {
   let service: TemplatesService;
@@ -25,10 +27,9 @@ describe('TemplatesService', () => {
   const createTestFieldDto = (
     title: string = TEST_FIELD_TITLE,
     type: FieldType = FieldType.TEXT,
-    columns: number[] = [1],
-    rows: number[] = [1],
+    positions: PositionDto[] = [new PositionDto(1, 1)],
     id?: string,
-  ) => new FieldRequestDto(title, type, columns, rows, id);
+  ) => new FieldRequestDto(title, type, positions, id);
 
   const createTestTemplate = (
     templateId: Types.ObjectId = TEST_TEMPLATE_ID,
@@ -39,8 +40,7 @@ describe('TemplatesService', () => {
         id: TEST_FIELD_ID,
         title: TEST_FIELD_TITLE,
         type: FieldType.TEXT,
-        columns: [1],
-        rows: [1],
+        positions: [new Position(1, 1)],
       }),
     ]);
   };
@@ -85,7 +85,7 @@ describe('TemplatesService', () => {
       // assert
       expect(response).toStrictEqual(
         new TemplateResponseDto(template.id, request.title, [
-          new FieldResponseDto(template.fields[0].id, fieldDto.title, fieldDto.type),
+          new FieldResponseDto(template.fields[0].id, fieldDto.title, fieldDto.type, fieldDto.positions),
         ]),
       );
 
@@ -127,8 +127,8 @@ describe('TemplatesService', () => {
     });
 
     it('should throw BadRequestException when field cannot be added', async () => {
-      // arrange - field with invalid columns/rows that exceed limits
-      const fieldDto = createTestFieldDto('Invalid Field', FieldType.TEXT, [100], [100]);
+      // arrange - field with invalid positions that exceed limits
+      const fieldDto = createTestFieldDto('Invalid Field', FieldType.TEXT, [new PositionDto(100, 100)]);
       const request = new CreateTemplateDto(TEST_TEMPLATE_TITLE, [fieldDto]);
 
       // act & assert
@@ -149,7 +149,12 @@ describe('TemplatesService', () => {
       // assert
       expect(response).toEqual([
         new TemplateResponseDto(TEST_TEMPLATE_ID.toHexString(), TEST_TEMPLATE_TITLE, [
-          new FieldResponseDto(template.fields[0].id, template.fields[0].title, template.fields[0].type),
+          new FieldResponseDto(
+            template.fields[0].id,
+            template.fields[0].title,
+            template.fields[0].type,
+            template.fields[0].positions.map(pos => new PositionDto(pos.row, pos.col)),
+          ),
         ]),
       ]);
 
@@ -200,8 +205,11 @@ describe('TemplatesService', () => {
       const request = new UpdateTemplateDto();
       request.title = 'New Title';
       request.fields = [
-        createTestFieldDto('Age Field', FieldType.NUMBER, [2], [2]), // New field without ID - should be added
-        createTestFieldDto(TEST_FIELD_TITLE, FieldType.TEXT, [1], [1], TEST_FIELD_ID), // Existing field with ID - should be updated
+        createTestFieldDto('Age Field', FieldType.NUMBER, [new PositionDto(2, 2)]), // New field without ID - should be added
+        {
+          ...createTestFieldDto(TEST_FIELD_TITLE, FieldType.TEXT, [new PositionDto(1, 1)]),
+          id: TEST_FIELD_ID,
+        }, // Existing field with ID - should be updated
       ];
 
       jest.spyOn(repository, 'findById').mockResolvedValue(templateToUpdate);
@@ -254,7 +262,12 @@ describe('TemplatesService', () => {
 
       const request = new UpdateTemplateDto();
       request.title = 'New Title';
-      request.fields = [createTestFieldDto('Appearance Description', FieldType.TEXT, [2], [2], TEST_FIELD_ID)];
+      request.fields = [
+        {
+          ...createTestFieldDto('Appearance Description', FieldType.TEXT, [new PositionDto(2, 2)]),
+          id: TEST_FIELD_ID,
+        },
+      ];
 
       jest.spyOn(repository, 'findById').mockResolvedValue(templateToUpdate);
       jest.spyOn(repository, 'update').mockResolvedValue(templateToUpdate);
@@ -284,8 +297,11 @@ describe('TemplatesService', () => {
       const request = new UpdateTemplateDto();
       request.title = 'new title';
       request.fields = [
-        createTestFieldDto('Age Field', FieldType.NUMBER, [2], [2]),
-        createTestFieldDto(TEST_FIELD_TITLE, FieldType.TEXT, [1], [1], TEST_FIELD_ID),
+        createTestFieldDto('Age Field', FieldType.NUMBER, [new PositionDto(2, 2)]),
+        {
+          ...createTestFieldDto(TEST_FIELD_TITLE, FieldType.TEXT, [new PositionDto(1, 1)]),
+          id: TEST_FIELD_ID,
+        },
       ];
 
       jest.spyOn(repository, 'findById').mockResolvedValue(null);
@@ -332,7 +348,7 @@ describe('TemplatesService', () => {
       const request = new UpdateTemplateDto();
       request.title = 'new title';
       request.fields = [
-        createTestFieldDto('Invalid Field', FieldType.TEXT, [100], [100]), // Invalid columns/rows that exceed limits
+        createTestFieldDto('Invalid Field', FieldType.TEXT, [new PositionDto(100, 100)]), // Invalid positions that exceed limits
       ];
 
       jest.spyOn(repository, 'findById').mockResolvedValue(templateToUpdate);

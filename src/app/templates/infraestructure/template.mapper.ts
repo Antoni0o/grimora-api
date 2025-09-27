@@ -4,6 +4,7 @@ import { Template } from '../domain/entities/template.entity';
 import { Field } from '../domain/entities/fields/field.entity';
 import { FieldFactory } from '../domain/factories/field.factory';
 import { FieldData } from '../domain/interfaces/field.interface';
+import { Position } from '../domain/entities/position.entity';
 
 export class TemplateMapper {
   static templateToDomain(document: TemplateDocument): Template {
@@ -11,8 +12,7 @@ export class TemplateMapper {
       document._id.toString(),
       document.title,
       document.fields?.map(field => TemplateMapper.fieldToDomain(field)) || [],
-      document.usedColumns,
-      document.usedRows,
+      document.usedPositions?.map(pos => new Position(pos.row, pos.col)) || [],
     );
   }
 
@@ -31,8 +31,7 @@ export class TemplateMapper {
       key: fieldSchema.key,
       value: fieldSchema.value,
       resourceId: fieldSchema.resourceId,
-      columns: fieldSchema.columns || [],
-      rows: fieldSchema.rows || [],
+      positions: fieldSchema.positions?.map(pos => new Position(pos.row, pos.col)) || [],
     };
   }
 

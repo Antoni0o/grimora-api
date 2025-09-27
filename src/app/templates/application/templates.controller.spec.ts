@@ -14,6 +14,7 @@ import { FieldType } from '../domain/enums/field-type.enum';
 import { NotFoundException } from '@nestjs/common';
 import { UpdateTemplateDto } from './dto/update-template.dto';
 import { AuthGuard } from '@thallesp/nestjs-better-auth';
+import { PositionDto } from './dto/position.dto';
 
 describe('TemplatesController', () => {
   let controller: TemplatesController;
@@ -79,8 +80,7 @@ describe('TemplatesController', () => {
           {
             title: 'Test Field',
             type: FieldType.TEXT,
-            columns: [1, 2],
-            rows: [1, 2],
+            positions: [new PositionDto(1, 1), new PositionDto(1, 2)],
           } as FieldRequestDto,
         ],
       };
@@ -93,15 +93,23 @@ describe('TemplatesController', () => {
       expect(createdTemplate.fields[0].type).toEqual(FieldType.TEXT);
       expect(createdTemplate.id).toBeDefined();
 
-      // Verificar se foi salvo corretamente no MongoDB incluindo usedColumns/usedRows
+      // Verificar se foi salvo corretamente no MongoDB incluindo usedPositions
       const foundTemplate = await templateModel.findById(createdTemplate.id);
       expect(foundTemplate).toBeDefined();
       expect(foundTemplate?.title).toEqual(createTemplateDto.title);
-      expect(foundTemplate?.usedColumns).toEqual(expect.arrayContaining([1, 2]));
-      expect(foundTemplate?.usedRows).toEqual(expect.arrayContaining([1, 2]));
+      expect(foundTemplate?.usedPositions).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ row: 1, col: 1 }),
+          expect.objectContaining({ row: 1, col: 2 }),
+        ]),
+      );
       expect(foundTemplate?.fields).toHaveLength(1);
-      expect(foundTemplate?.fields?.[0].columns).toEqual([1, 2]);
-      expect(foundTemplate?.fields?.[0].rows).toEqual([1, 2]);
+      expect(foundTemplate?.fields?.[0].positions).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ row: 1, col: 1 }),
+          expect.objectContaining({ row: 1, col: 2 }),
+        ]),
+      );
     });
 
     it('should create template with multiple fields and proper grid positioning', async () => {
@@ -111,14 +119,12 @@ describe('TemplatesController', () => {
           {
             title: 'Field 1',
             type: FieldType.TEXT,
-            columns: [1],
-            rows: [1],
+            positions: [new PositionDto(1, 1)],
           } as FieldRequestDto,
           {
             title: 'Field 2',
             type: FieldType.NUMBER,
-            columns: [2, 3],
-            rows: [2],
+            positions: [new PositionDto(2, 2), new PositionDto(2, 3)],
           } as FieldRequestDto,
         ],
       };
@@ -130,8 +136,13 @@ describe('TemplatesController', () => {
 
       // Verificar integração completa no MongoDB
       const foundTemplate = await templateModel.findById(createdTemplate.id);
-      expect(foundTemplate?.usedColumns).toEqual(expect.arrayContaining([1, 2, 3]));
-      expect(foundTemplate?.usedRows).toEqual(expect.arrayContaining([1, 2]));
+      expect(foundTemplate?.usedPositions).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ row: 1, col: 1 }),
+          expect.objectContaining({ row: 2, col: 2 }),
+          expect.objectContaining({ row: 2, col: 3 }),
+        ]),
+      );
       expect(foundTemplate?.fields).toHaveLength(2);
     });
   });
@@ -192,8 +203,7 @@ describe('TemplatesController', () => {
           {
             title: 'Updated Field',
             type: FieldType.NUMBER,
-            columns: [2, 3, 4],
-            rows: [3, 4],
+            positions: [new PositionDto(3, 2), new PositionDto(3, 3), new PositionDto(4, 4)],
           } as FieldRequestDto,
         ],
       };
@@ -207,8 +217,14 @@ describe('TemplatesController', () => {
       // Verificar integração completa - dados persistidos no MongoDB
       const foundTemplate = await templateModel.findById(createdTemplate.id);
       expect(foundTemplate?.title).toEqual(updateTemplateDto.title);
-      expect(foundTemplate?.usedColumns).toEqual(expect.arrayContaining([1, 2, 3, 4])); // Campo original + novo
-      expect(foundTemplate?.usedRows).toEqual(expect.arrayContaining([1, 3, 4])); // Campo original + novo
+      expect(foundTemplate?.usedPositions).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ row: 1, col: 1 }), // Campo original
+          expect.objectContaining({ row: 3, col: 2 }), // Campo atualizado
+          expect.objectContaining({ row: 3, col: 3 }), // Campo atualizado
+          expect.objectContaining({ row: 4, col: 4 }), // Campo atualizado
+        ]),
+      );
       expect(foundTemplate?.fields).toHaveLength(2); // Campo original + campo atualizado
 
       // Verificar que pelo menos um campo tem os dados atualizados
@@ -228,8 +244,7 @@ describe('TemplatesController', () => {
           {
             title: 'New Field',
             type: FieldType.SELECT,
-            columns: [5],
-            rows: [5],
+            positions: [new PositionDto(5, 5)],
           } as FieldRequestDto,
         ],
       };
@@ -239,8 +254,12 @@ describe('TemplatesController', () => {
       // Verificar que o template foi atualizado corretamente
       const foundTemplate = await templateModel.findById(createdTemplate.id);
       expect(foundTemplate?.fields).toHaveLength(2); // Campo original + novo campo
-      expect(foundTemplate?.usedColumns).toEqual(expect.arrayContaining([1, 5]));
-      expect(foundTemplate?.usedRows).toEqual(expect.arrayContaining([1, 5]));
+      expect(foundTemplate?.usedPositions).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ row: 1, col: 1 }), // Campo original
+          expect.objectContaining({ row: 5, col: 5 }), // Novo campo
+        ]),
+      );
     });
 
     it('should throw NotFoundException if template to update is not found', async () => {
@@ -283,8 +302,11 @@ describe('TemplatesController', () => {
       const templateWithInvalidColumns = {
         title: 'Invalid Template',
         fields: [],
-        usedColumns: [0, 7, 8], // 0 e 7,8 excedem os limites (1-6)
-        usedRows: [1],
+        usedPositions: [
+          { row: 1, col: 0 }, // col 0 excede limite (deve ser 1-6)
+          { row: 1, col: 7 }, // col 7 excede limite (deve ser 1-6)
+          { row: 1, col: 8 }, // col 8 excede limite (deve ser 1-6)
+        ],
       };
 
       await expect(templateModel.create(templateWithInvalidColumns)).rejects.toThrow();
@@ -294,8 +316,11 @@ describe('TemplatesController', () => {
       const templateWithInvalidRows = {
         title: 'Invalid Template',
         fields: [],
-        usedColumns: [1],
-        usedRows: [0, 21, 25], // 0 e 21,25 excedem os limites (1-20)
+        usedPositions: [
+          { row: 0, col: 1 }, // row 0 excede limite (deve ser 1-20)
+          { row: 21, col: 1 }, // row 21 excede limite (deve ser 1-20)
+          { row: 25, col: 1 }, // row 25 excede limite (deve ser 1-20)
+        ],
       };
 
       await expect(templateModel.create(templateWithInvalidRows)).rejects.toThrow();
@@ -305,20 +330,28 @@ describe('TemplatesController', () => {
       const validTemplate = {
         title: 'Valid Template',
         fields: [],
-        usedColumns: [1, 3, 6], // Dentro do limite 1-6
-        usedRows: [1, 10, 20], // Dentro do limite 1-20
+        usedPositions: [
+          { row: 1, col: 1 }, // Dentro do limite
+          { row: 10, col: 3 }, // Dentro do limite
+          { row: 20, col: 6 }, // Dentro do limite
+        ],
       };
 
       const created = await templateModel.create(validTemplate);
       expect(created).toBeDefined();
-      expect(created.usedColumns).toEqual([1, 3, 6]);
-      expect(created.usedRows).toEqual([1, 10, 20]);
+      expect(created.usedPositions).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ row: 1, col: 1 }),
+          expect.objectContaining({ row: 10, col: 3 }),
+          expect.objectContaining({ row: 20, col: 6 }),
+        ]),
+      );
     });
   });
 
   async function createTemplate(title: string) {
     return await controller.create(
-      new CreateTemplateDto(title, [new FieldRequestDto('title', FieldType.TEXT, [1], [1])]),
+      new CreateTemplateDto(title, [new FieldRequestDto('title', FieldType.TEXT, [new PositionDto(1, 1)])]),
     );
   }
 });
