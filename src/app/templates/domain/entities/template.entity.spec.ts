@@ -1,182 +1,189 @@
 import { FieldType } from '../enums/field-type.enum';
 import { FieldData } from '../interfaces/field.interface';
 import { Template } from './template.entity';
+import { TemplateDomainError } from '../types/template-domain-result.types';
+
+// --- Test Data Builders ---
+
+const createFieldData = (
+  id: string,
+  type: FieldType,
+  columns: number[],
+  rows: number[],
+  title: string = 'Field',
+  fields?: FieldData[],
+): FieldData => ({
+  id,
+  title: `${title} ${id}`,
+  type,
+  columns,
+  rows,
+  fields,
+});
+
+const createTextField = (id: string, columns: number[], rows: number[]): FieldData =>
+  createFieldData(id, FieldType.TEXT, columns, rows, 'Text Field');
+
+const createNumberField = (id: string, columns: number[], rows: number[]): FieldData =>
+  createFieldData(id, FieldType.NUMBER, columns, rows, 'Number Field');
+
+const createGroupField = (id: string, fields: FieldData[]): FieldData =>
+  createFieldData(id, FieldType.GROUP, [], [], 'Group Field', fields);
 
 describe('TemplateEntity', () => {
   let template: Template;
 
   beforeEach(() => {
-    template = new Template('id', 'title', [], [], []);
+    template = new Template('template-id', 'Test Template');
   });
 
-  describe('addField', () => {
-    it('should add a new field', () => {
-      const field = template.addField({
-        id: 'fieldId',
-        title: 'Field Title',
-        type: FieldType.TEXT,
-        columns: [1],
-        rows: [1],
-      });
+  describe('Field Addition', () => {
+    it('should add a common field successfully', () => {
+      const field = createTextField('field1', [1], [1]);
+      const result = template.addField(field);
 
-      expect(field).toBeDefined();
+      expect(result.error).toBe(TemplateDomainError.None);
+      expect(result.field).toBeDefined();
       expect(template.fields.length).toBe(1);
       expect(template.usedColumns).toContain(1);
       expect(template.usedRows).toContain(1);
     });
 
-    it('should not add a field if columns exceed limit', () => {
-      const field = template.addField({
-        id: 'fieldId',
-        title: 'Field Title',
-        type: FieldType.TEXT,
-        columns: [1, 2, 3, 4, 5, 6, 7],
-        rows: [1],
-      });
+    it('should fail if column limit is exceeded', () => {
+      const field = createTextField('field1', [100], [1]);
+      const result = template.addField(field);
 
-      expect(field).toBeNull();
-      expect(template.fields.length).toBe(0);
+      expect(result.error).toBe(TemplateDomainError.ColumnLimitExceeded);
+      expect(result.field).toBeUndefined();
     });
 
-    it('should not add a field if rows exceed limit', () => {
-      const field = template.addField({
-        id: 'fieldId',
-        title: 'Field Title',
-        type: FieldType.TEXT,
-        columns: [1],
-        rows: [15, 16, 17, 18, 19, 20, 21],
-      });
+    it('should fail if row limit is exceeded', () => {
+      const field = createTextField('field1', [1], [100]);
+      const result = template.addField(field);
 
-      expect(field).toBeNull();
-      expect(template.fields.length).toBe(0);
-    });
-  });
-
-  describe('updateField', () => {
-    it('should update an existing field', () => {
-      const addedField = template.addField({
-        id: 'fieldId',
-        title: 'Field Title',
-        type: FieldType.TEXT,
-        columns: [1],
-        rows: [1],
-      });
-
-      expect(addedField).toBeDefined();
-
-      const fieldData = <FieldData>{
-        title: 'Updated Title',
-        type: FieldType.NUMBER,
-        columns: [2],
-        rows: [2],
-      };
-
-      const updatedField = template.updateField(addedField!.id, fieldData);
-
-      expect(updatedField).toBeDefined();
-      expect(updatedField!.title).toBe('Updated Title');
-      expect(updatedField!.type).toBe(FieldType.NUMBER);
-      expect(template.usedColumns).toContain(2);
-      expect(template.usedRows).toContain(2);
-      expect(template.usedColumns).not.toContain(1);
-      expect(template.usedRows).not.toContain(1);
+      expect(result.error).toBe(TemplateDomainError.RowLimitExceeded);
+      expect(result.field).toBeUndefined();
     });
 
-    it('should not update a non-existing field', () => {
-      const fieldData = <FieldData>{
-        title: 'Updated Title',
-        type: FieldType.NUMBER,
-        columns: [2],
-        rows: [2],
-      };
+    it('should fail on slot conflict with another common field', () => {
+      template.addField(createTextField('f1', [1], [1]));
+      const result = template.addField(createTextField('f2', [1], [2]));
 
-      const updatedField = template.updateField('nonExistingId', fieldData);
-
-      expect(updatedField).toBeNull();
+      expect(result.error).toBe(TemplateDomainError.CommonFieldSlotConflict);
+      expect(result.field).toBeUndefined();
     });
 
-    it('should not update if new columns exceed limit', () => {
-      const addedField = template.addField({
-        id: 'fieldId',
-        title: 'Field Title',
-        type: FieldType.TEXT,
-        columns: [1],
-        rows: [1],
-      });
+    it('should add a group and occupy slots of its children', () => {
+      const group = createGroupField('g1', [createTextField('f1', [2], [2]), createNumberField('f2', [3], [3])]);
+      const result = template.addField(group);
 
-      expect(addedField).toBeDefined();
-
-      const fieldData = <FieldData>{
-        title: 'Updated Title',
-        type: FieldType.NUMBER,
-        columns: [1, 2, 3, 4, 5, 6, 7],
-        rows: [2],
-      };
-
-      const updatedField = template.updateField(addedField!.id, fieldData);
-
-      expect(updatedField).toBeNull();
-      expect(template.usedColumns).toContain(1);
-      expect(template.usedRows).toContain(1);
+      expect(result.error).toBe(TemplateDomainError.None);
+      expect(template.usedColumns).toEqual(expect.arrayContaining([2, 3]));
+      expect(template.usedRows).toEqual(expect.arrayContaining([2, 3]));
     });
 
-    it('should not update if new rows exceed limit', () => {
-      const addedField = template.addField({
-        id: 'fieldId',
-        title: 'Field Title',
-        type: FieldType.TEXT,
-        columns: [1],
-        rows: [1],
-      });
+    it('should fail if a group child conflicts with an existing field', () => {
+      template.addField(createTextField('existing', [4], [4]));
+      const group = createGroupField('g1', [createTextField('conflicting', [4], [5])]);
+      const result = template.addField(group);
 
-      expect(addedField).toBeDefined();
-
-      const fieldData = <FieldData>{
-        title: 'Updated Title',
-        type: FieldType.NUMBER,
-        columns: [2],
-        rows: [14, 15, 16, 17, 18, 19, 20, 21],
-      };
-
-      const updatedField = template.updateField(addedField!.id, fieldData);
-
-      expect(updatedField).toBeNull();
-      expect(template.usedColumns).toContain(1);
-      expect(template.usedRows).toContain(1);
+      expect(result.error).toBe(TemplateDomainError.CommonFieldSlotConflict);
     });
   });
 
-  it('should not add an used row bigger than limit', () => {
-    const newUsedRows = [1, 2, 3, 21];
+  describe('Field Update', () => {
+    beforeEach(() => {
+      template.addField(createTextField('field1', [1], [1]));
+    });
 
-    const response = template.addUsedRows(newUsedRows, FieldType.TEXT);
+    it('should update an existing field successfully', () => {
+      const updatedFieldData = createNumberField('field1', [2], [2]);
+      const result = template.updateField('field1', updatedFieldData);
 
-    expect(response).toBe(null);
+      expect(result.error).toBe(TemplateDomainError.None);
+      expect(result.field?.title).toBe(updatedFieldData.title);
+      expect(result.field?.type).toBe(FieldType.NUMBER);
+      expect(template.usedColumns).toEqual([2]);
+      expect(template.usedRows).toEqual([2]);
+    });
+
+    it('should fail to update a non-existent field', () => {
+      const result = template.updateField('non-existent', createTextField('any', [2], [2]));
+
+      expect(result.error).toBe(TemplateDomainError.FieldNotFound);
+    });
+
+    it('should fail if updated field exceeds column limit', () => {
+      const result = template.updateField('field1', createTextField('field1', [100], [2]));
+
+      expect(result.error).toBe(TemplateDomainError.ColumnLimitExceeded);
+      expect(template.usedColumns).toEqual([1]);
+    });
+
+    it('should fail if updated field exceeds row limit', () => {
+      const result = template.updateField('field1', createTextField('field1', [2], [100]));
+
+      expect(result.error).toBe(TemplateDomainError.RowLimitExceeded);
+      expect(template.usedRows).toEqual([1]);
+    });
   });
 
-  it('should not add an used row that is already in use', () => {
-    template.usedRows = [1, 2, 3];
-    const newUsedRows = [3, 4, 5];
+  describe('Nested Group Validation', () => {
+    it('should add a group with nested children and occupy all slots', () => {
+      const nestedGroup = createGroupField('parent-group', [
+        createTextField('parent-field', [1], [1]),
+        createGroupField('child-group', [
+          createTextField('nested-field-1', [2], [2]),
+          createNumberField('nested-field-2', [3], [3]),
+        ]),
+      ]);
+      const result = template.addField(nestedGroup);
 
-    const response = template.addUsedRows(newUsedRows, FieldType.TEXT);
+      expect(result.error).toBe(TemplateDomainError.None);
+      expect(template.usedColumns).toEqual(expect.arrayContaining([1, 2, 3]));
+      expect(template.usedRows).toEqual(expect.arrayContaining([1, 2, 3]));
+    });
 
-    expect(response).toBe(null);
-  });
+    it('should fail if a deeply nested child conflicts with an existing field', () => {
+      template.addField(createTextField('existing', [2], [2]));
+      const nestedGroup = createGroupField('parent-group', [
+        createGroupField('child-group', [createTextField('conflicting', [2], [4])]),
+      ]);
+      const result = template.addField(nestedGroup);
 
-  it('should not add an used column bigger than limit', () => {
-    const newUsedColumns = [1, 2, 7];
+      expect(result.error).toBe(TemplateDomainError.CommonFieldSlotConflict);
+    });
 
-    const response = template.addUsedColumns(newUsedColumns, FieldType.TEXT);
+    it('should handle multiple levels of nesting correctly', () => {
+      const deeplyNestedGroup = createGroupField('level-1', [
+        createGroupField('level-2', [createGroupField('level-3', [createTextField('deep-field', [4], [7])])]),
+      ]);
+      const result = template.addField(deeplyNestedGroup);
 
-    expect(response).toBe(null);
-  });
+      expect(result.error).toBe(TemplateDomainError.None);
+      expect(template.usedColumns).toContain(4);
+      expect(template.usedRows).toContain(7);
+    });
 
-  it('should not add an used column that is already in use', () => {
-    template.usedColumns = [1, 2, 3];
-    const newUsedColumns = [3, 4, 5];
+    it('should fail if a nested child exceeds column limits', () => {
+      const invalidGroup = createGroupField('parent', [
+        createGroupField('child', [createTextField('invalid', [100], [1])]),
+      ]);
+      const result = template.addField(invalidGroup);
 
-    const response = template.addUsedColumns(newUsedColumns, FieldType.TEXT);
+      expect(result.error).toBe(TemplateDomainError.ColumnLimitExceeded);
+    });
 
-    expect(response).toBe(null);
+    it('should handle a mix of common fields and nested groups', () => {
+      const mixedGroup = createGroupField('mixed-group', [
+        createTextField('common-field', [5], [8]),
+        createGroupField('nested-group', [createNumberField('nested-field', [6], [9])]),
+      ]);
+      const result = template.addField(mixedGroup);
+
+      expect(result.error).toBe(TemplateDomainError.None);
+      expect(template.usedColumns).toEqual(expect.arrayContaining([5, 6]));
+      expect(template.usedRows).toEqual(expect.arrayContaining([8, 9]));
+    });
   });
 });

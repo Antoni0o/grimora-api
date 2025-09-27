@@ -10,12 +10,11 @@ import { UpdateTemplateDto } from './dto/update-template.dto';
 import { TEMPLATES_REPOSITORY } from '../domain/constants/template.constants';
 import { ITemplateRepository } from '../domain/repositories/template.repository';
 import { Template } from '../domain/entities/template.entity';
-import { FieldFactory } from '../domain/factories/field.factory';
 import { FieldData } from '../domain/interfaces/field.interface';
-import { Field } from '../domain/entities/fields/field.entity';
 import { FieldRequestDto } from './dto/field-request.dto';
 import { TemplateResponseDto } from './dto/template-response.dto';
 import { FieldResponseDto } from './dto/field-response.dto';
+import { TemplateDomainError, TemplateDomainResult } from '../domain/types/template-domain-result.types';
 
 const INTERNAL_SERVER_ERROR_MESSAGE = 'Internal Error at Template operation. Try again, later.';
 const NOT_FOUND_MESSAGE = 'Template not found.';
@@ -35,13 +34,15 @@ export class TemplatesService {
     return this.mapToDto(response);
   }
 
-  private addFields(fields: FieldRequestDto[], template: Template) {
+  private addFields(fields: FieldRequestDto[], template: Template): void {
     fields.forEach(field => {
       const fieldData: FieldData = this.mapToFieldData(field);
 
-      const response = template.addField(fieldData);
+      const result = template.addField(fieldData);
 
-      if (response == null) throw new BadRequestException('Field cannot be added to the template.');
+      if (result.error !== TemplateDomainError.None) {
+        throw new BadRequestException(this.getDomainErrorMessage(result.error));
+      }
     });
   }
 
@@ -62,38 +63,66 @@ export class TemplatesService {
   }
 
   async update(id: string, request: UpdateTemplateDto): Promise<TemplateResponseDto> {
-    const template = await this.repository.findById(id);
+    const existingTemplate = await this.repository.findById(id);
 
-    if (!template) throw new NotFoundException(NOT_FOUND_MESSAGE);
+    if (!existingTemplate) throw new NotFoundException(NOT_FOUND_MESSAGE);
 
-    template.title = request.title;
-    this.updateFields(request.fields, template);
+    const updatedTemplate = new Template(
+      existingTemplate.id,
+      request.title,
+      existingTemplate.fields,
+      existingTemplate.usedColumns,
+      existingTemplate.usedRows,
+    );
 
-    const response = await this.repository.update(id, template);
+    this.updateFields(request.fields, updatedTemplate);
+
+    const response = await this.repository.update(id, updatedTemplate);
 
     if (!response) throw new InternalServerErrorException(INTERNAL_SERVER_ERROR_MESSAGE);
 
-    return response;
+    return this.mapToDto(response);
   }
 
-  private updateFields(fields: FieldRequestDto[], template: Template) {
-    let errors = 0;
+  private updateFields(fields: FieldRequestDto[], template: Template): void {
+    const errors: string[] = [];
 
     fields.forEach(field => {
       const fieldData: FieldData = this.mapToFieldData(field);
 
+      let result: TemplateDomainResult;
+
       if (!field.id) {
-        const response = template.addField(fieldData);
-
-        if (response == null) errors++;
+        result = template.addField(fieldData);
       } else {
-        const response = template.updateField(field.id, fieldData);
+        result = template.updateField(field.id, fieldData);
+      }
 
-        if (response == null) errors++;
+      if (result.error !== TemplateDomainError.None) {
+        errors.push(this.getDomainErrorMessage(result.error));
       }
     });
 
-    if (errors > 0) throw new BadRequestException('Some Fields are invalid.');
+    if (errors.length > 0) {
+      throw new BadRequestException(`Field operations failed: ${errors.join(', ')}`);
+    }
+  }
+
+  private getDomainErrorMessage(error: TemplateDomainError): string {
+    switch (error) {
+      case TemplateDomainError.ColumnLimitExceeded:
+        return 'Column limit exceeded';
+      case TemplateDomainError.RowLimitExceeded:
+        return 'Row limit exceeded';
+      case TemplateDomainError.CommonFieldSlotConflict:
+        return 'Field slot conflict';
+      case TemplateDomainError.GroupFieldSlotConflict:
+        return 'Group field slot conflict';
+      case TemplateDomainError.FieldNotFound:
+        return 'Field not found';
+      default:
+        return 'Unknown field error';
+    }
   }
 
   async delete(id: string): Promise<boolean> {
