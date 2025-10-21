@@ -90,6 +90,7 @@ export class SystemsService {
     if (request.requesterId !== system?.creatorId) throw new BadRequestException(BAD_REQUEST_MESSAGE);
 
     system.title = request.title;
+    system.description = request.description;
     system.templates = this.mapTemplateIdsToTemplates(request.templateIds);
     system.resources = this.mapResourcesIdToResources(request.resourceIds);
 
@@ -120,6 +121,7 @@ export class SystemsService {
     return new SystemResponseDto(
       response.id,
       response.title,
+      response.description,
       response.creatorId,
       response.templates.map(template => template.id),
       response.resources?.map(resource => resource.id) ?? [],
@@ -130,6 +132,7 @@ export class SystemsService {
     return new SystemPopulatedResponseDto(
       response.id,
       response.title,
+      response.description,
       response.creatorId,
       response.templates.map(template => this.mapTemplateToPopulatedDto(template)),
       response.resources?.map(resource => this.mapResourceToPopulatedDto(resource)) ?? [],
@@ -173,6 +176,6 @@ export class SystemsService {
   }
 
   private mapResourcesIdToResources(resourceIds: string[]) {
-    return resourceIds.map(resourceId => new Resource(resourceId, '', []));
+    return resourceIds.map(resourceId => new Resource(resourceId, '', [])) ?? [];
   }
 }

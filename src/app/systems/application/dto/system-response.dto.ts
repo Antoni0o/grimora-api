@@ -3,13 +3,22 @@ import { FieldType } from '../../../templates/domain/enums/field-type.enum';
 export class SystemResponseDto {
   id: string;
   title: string;
+  description: string;
   creatorId: string;
   templateIds: string[];
   resourceIds: string[];
 
-  constructor(id: string, title: string, creatorId: string, templateIds: string[], resourceIds: string[] = []) {
+  constructor(
+    id: string,
+    title: string,
+    description: string,
+    creatorId: string,
+    templateIds: string[],
+    resourceIds: string[] = [],
+  ) {
     this.id = id;
     this.title = title;
+    this.description = description;
     this.creatorId = creatorId;
     this.templateIds = templateIds;
     this.resourceIds = resourceIds;
@@ -85,6 +94,7 @@ export class ResourcePopulatedResponseDto {
 export class SystemPopulatedResponseDto {
   id: string;
   title: string;
+  description: string;
   creatorId: string;
   templates: TemplatePopulatedResponseDto[];
   resources: ResourcePopulatedResponseDto[];
@@ -92,12 +102,14 @@ export class SystemPopulatedResponseDto {
   constructor(
     id: string,
     title: string,
+    description: string,
     creatorId: string,
     templates: TemplatePopulatedResponseDto[],
     resources: ResourcePopulatedResponseDto[] = [],
   ) {
     this.id = id;
     this.title = title;
+    this.description = description;
     this.creatorId = creatorId;
     this.templates = templates;
     this.resources = resources;

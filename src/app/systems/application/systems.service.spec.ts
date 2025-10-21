@@ -60,7 +60,7 @@ describe('SystemsService', () => {
 
   it('should create a system', async () => {
     // arrange
-    const request = new CreateSystemDto(title, templateIds, resourceIds, creatorId);
+    const request = new CreateSystemDto(title, '', templateIds, resourceIds, creatorId);
     const createdSystem = new System(systemId, title, creatorId, [], []);
 
     jest.spyOn(repository, 'create').mockResolvedValue(createdSystem);
@@ -82,7 +82,7 @@ describe('SystemsService', () => {
 
   it('should not create a system when repository fails', async () => {
     // arrange
-    const request = new CreateSystemDto(title, templateIds, resourceIds, creatorId);
+    const request = new CreateSystemDto(title, '', templateIds, resourceIds, creatorId);
 
     jest.spyOn(repository, 'create').mockResolvedValue(null);
 
@@ -210,9 +210,10 @@ describe('SystemsService', () => {
     request.templateIds = [uuid()];
     request.resourceIds = [uuid()];
     request.requesterId = creatorId;
+    request.description = 'description';
 
     const systemToUpdate = new System(systemId, title, creatorId, [], []);
-    const updatedSystem = new System(systemId, request.title, creatorId, [], []);
+    const updatedSystem = new System(systemId, request.title, creatorId, [], [], request.description);
 
     jest.spyOn(repository, 'findById').mockResolvedValue(systemToUpdate);
     jest.spyOn(repository, 'update').mockResolvedValue(updatedSystem);
@@ -226,6 +227,7 @@ describe('SystemsService', () => {
       updatedSystem.id,
       expect.objectContaining({
         title: request.title,
+        description: request.description,
         templates: expect.arrayContaining([expect.objectContaining({ id: request.templateIds[0] })]),
         resources: expect.arrayContaining([expect.objectContaining({ id: request.resourceIds[0] })]),
       }),

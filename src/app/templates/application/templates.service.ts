@@ -141,8 +141,6 @@ export class TemplatesService {
       id: field.id || '',
       title: field.title,
       type: field.type,
-      key: field.key,
-      value: field.value,
       resourceId: field.resourceId,
       fields: field.fields ? field.fields.map(child => this.mapToFieldData(child)) : undefined,
       positions: field.positions?.map(pos => new Position(pos.row, pos.col)) || [],
