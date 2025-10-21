@@ -10,6 +10,7 @@ import { SystemsModule } from './app/systems/systems.module';
 import { LikesModule } from './app/likes/likes.module';
 import { AuthModule } from '@thallesp/nestjs-better-auth';
 import { auth } from './lib/auth';
+import { BffModule } from './bff/bff.module';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { auth } from './lib/auth';
     ResourcesModule,
     LikesModule,
     AuthModule.forRoot(auth),
+    BffModule,
   ],
   controllers: [],
   providers: [],
