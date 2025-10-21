@@ -9,9 +9,7 @@ export class ResourceMapper {
     return new Resource(
       document._id.toString(),
       document.title,
-      document.resourceItems
-        ? document.resourceItems?.map(resourceItem => ResourceMapper.resourceItemToDomain(resourceItem))
-        : [],
+      document.items ? document.items?.map(resourceItem => ResourceMapper.resourceItemToDomain(resourceItem)) : [],
     );
   }
 

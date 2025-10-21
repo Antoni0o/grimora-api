@@ -31,7 +31,7 @@ export class ResourcesRepository implements IResourcesRepository {
   async create(resource: Resource): Promise<Resource | null> {
     const createdResource = await this.resourceModel.create({
       title: resource.name,
-      resourceItems: resource.items,
+      items: resource.items,
     });
 
     if (!createdResource) return null;
@@ -47,7 +47,7 @@ export class ResourcesRepository implements IResourcesRepository {
         id,
         {
           title: resource.name,
-          resourceItems: resource.items,
+          items: resource.items,
         },
         { new: true, runValidators: true },
       )

@@ -10,7 +10,7 @@ export class ResourceMongoSchema {
   title!: string;
 
   @Prop({ type: [ResourceItemSchema], required: true, default: [] })
-  resourceItems?: ResourceItemMongoSchema[];
+  items?: ResourceItemMongoSchema[];
 
   createdAt!: Date;
   updatedAt!: Date;
