@@ -1,4 +1,4 @@
-import { IsArray, IsMongoId, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsArray, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import { CreateResourceDto } from 'src/app/resources/application/dto/create-resource.dto';
 import { CreateTemplateDto } from 'src/app/templates/application/dto/create-template.dto';
 
