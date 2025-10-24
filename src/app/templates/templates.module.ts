@@ -15,5 +15,6 @@ import { TemplatesRepository as TemplatesRepository } from './infraestructure/te
       useClass: TemplatesRepository,
     },
   ],
+  exports: [TemplatesService],
 })
 export class TemplatesModule {}

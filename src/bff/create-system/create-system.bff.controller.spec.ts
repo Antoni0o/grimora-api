@@ -133,91 +133,53 @@ describe('CreateSystemBffController', () => {
   });
 
   describe('create', () => {
-    it('should create a complete system with resources and templates', async () => {
-      const bffCreateSystemDto: BffCreateSystemDto = new BffCreateSystemDto(
-        'Test System',
-        'A complete test system',
-        [
-          new CreateResourceDto('Character', [
-            new ResourceItemRequestDto('name', { type: 'string' }),
-            new ResourceItemRequestDto('age', { type: 'number' }),
-          ]),
-        ],
-        [
-          new CreateTemplateDto('Character Template', [
-            new FieldRequestDto('Name Field', FieldType.TEXT, [new PositionDto(1, 1)]),
-            new FieldRequestDto('Age Field', FieldType.NUMBER, [new PositionDto(2, 1)]),
-          ]),
-        ],
-      );
+    it('should create a complete D&D system with weapons, spells and character sheets', async () => {
+      const dndSystem = buildDnDSystem();
 
-      const createdSystem = await controller.execute(bffCreateSystemDto, userSession);
+      const createdSystem = await controller.execute(dndSystem, userSession);
 
       expect(createdSystem).toBeDefined();
-      expect(createdSystem.title).toBe(bffCreateSystemDto.title);
-      expect(createdSystem.resourceIds).toHaveLength(1);
-      expect(createdSystem.templateIds).toHaveLength(1);
-
-      const resources = await findResourcesByIds(createdSystem.resourceIds);
-      expect(resources).toHaveLength(1);
-      expect(resources[0].title).toBe('Character');
-
-      const templates = await findTemplatesByIds(createdSystem.templateIds);
-      expect(templates).toHaveLength(1);
-      expect(templates[0].title).toBe('Character Template');
-
-      const system = await systemModel.findById(createdSystem.id);
-      expect(system).toBeDefined();
-      expect(system?.title).toBe(bffCreateSystemDto.title);
-    });
-
-    it('should create system with multiple resources and templates', async () => {
-      const bffCreateSystemDto: BffCreateSystemDto = new BffCreateSystemDto(
-        'Multi Resource System',
-        'System with multiple resources and templates',
-        [
-          new CreateResourceDto('Character', [new ResourceItemRequestDto('name', { type: 'string' })]),
-          new CreateResourceDto('Product', [
-            new ResourceItemRequestDto('title', { type: 'string' }),
-            new ResourceItemRequestDto('price', { type: 'number' }),
-          ]),
-        ],
-        [
-          new CreateTemplateDto('Character Template', [
-            new FieldRequestDto('Name', FieldType.TEXT, [new PositionDto(1, 1)]),
-          ]),
-          new CreateTemplateDto('Weapon Template', [
-            new FieldRequestDto('Title', FieldType.TEXT, [new PositionDto(1, 1)]),
-            new FieldRequestDto('Price', FieldType.NUMBER, [new PositionDto(2, 1)]),
-          ]),
-        ],
-      );
-
-      const createdSystem = await controller.execute(bffCreateSystemDto, userSession);
-
-      expect(createdSystem).toBeDefined();
-      expect(createdSystem.resourceIds).toHaveLength(2);
+      expect(createdSystem.title).toBe('Dungeons & Dragons 5e');
+      expect(createdSystem.resourceIds).toHaveLength(3);
       expect(createdSystem.templateIds).toHaveLength(2);
 
       const resources = await findResourcesByIds(createdSystem.resourceIds);
-      expect(resources).toHaveLength(2);
-      expect(resources.map(r => r.title)).toEqual(expect.arrayContaining(['Character', 'Product']));
+      expect(resources).toHaveLength(3);
+      expect(resources.map(r => r.title)).toEqual(expect.arrayContaining(['Weapon', 'Spell', 'Armor']));
 
       const templates = await findTemplatesByIds(createdSystem.templateIds);
       expect(templates).toHaveLength(2);
-      expect(templates.map(t => t.title)).toEqual(expect.arrayContaining(['Character Template', 'Weapon Template']));
+      expect(templates.map(t => t.title)).toEqual(expect.arrayContaining(['Warrior Sheet', 'Mage Sheet']));
+
+      const system = await systemModel.findById(createdSystem.id);
+      expect(system).toBeDefined();
+      expect(system?.title).toBe('Dungeons & Dragons 5e');
     });
 
-    it('should create system with only templates (no resources)', async () => {
+    it('should create Pathfinder system with weapons and warrior sheets', async () => {
+      const pathfinderSystem = buildPathfinderSystem();
+
+      const createdSystem = await controller.execute(pathfinderSystem, userSession);
+
+      expect(createdSystem).toBeDefined();
+      expect(createdSystem.resourceIds).toHaveLength(2);
+      expect(createdSystem.templateIds).toHaveLength(1);
+
+      const resources = await findResourcesByIds(createdSystem.resourceIds);
+      expect(resources).toHaveLength(2);
+      expect(resources.map(r => r.title)).toEqual(expect.arrayContaining(['Weapon', 'Spell']));
+
+      const templates = await findTemplatesByIds(createdSystem.templateIds);
+      expect(templates).toHaveLength(1);
+      expect(templates[0].title).toBe('Warrior Sheet');
+    });
+
+    it('should create RPG system with only character templates (no resources)', async () => {
       const bffCreateSystemDto: BffCreateSystemDto = new BffCreateSystemDto(
-        'Template Only System',
-        'System with only templates',
+        'Narrative RPG System',
+        'Story-focused RPG without resource management',
         [],
-        [
-          new CreateTemplateDto('Simple Template', [
-            new FieldRequestDto('Field', FieldType.TEXT, [new PositionDto(1, 1)]),
-          ]),
-        ],
+        [buildSimpleCharacterTemplate()],
       );
 
       const createdSystem = await controller.execute(bffCreateSystemDto, userSession);
@@ -234,25 +196,18 @@ describe('CreateSystemBffController', () => {
   });
 
   describe('Integration between services', () => {
-    it('should create resources before creating the system', async () => {
-      const bffCreateSystemDto: BffCreateSystemDto = new BffCreateSystemDto(
-        'Integration Test',
-        'Testing service integration order',
-        [new CreateResourceDto('User', [new ResourceItemRequestDto('name', { type: 'string' })])],
-        [
-          new CreateTemplateDto('Character Template', [
-            new FieldRequestDto('Name', FieldType.TEXT, [new PositionDto(1, 1)]),
-          ]),
-        ],
-      );
+    it('should create spells and warrior sheets in a fantasy system', async () => {
+      const fantasySystem = buildGenericFantasySystem();
 
-      const createdSystem = await controller.execute(bffCreateSystemDto, userSession);
+      const createdSystem = await controller.execute(fantasySystem, userSession);
 
       const resources = await findResourcesByIds(createdSystem.resourceIds);
       expect(resources).toHaveLength(1);
+      expect(resources[0].title).toBe('Item');
 
       const templates = await findTemplatesByIds(createdSystem.templateIds);
       expect(templates).toHaveLength(1);
+      expect(templates[0].title).toBe('Simple Character');
 
       const system = await systemModel.findById(createdSystem.id);
       expect(system?.resources).toEqual(
@@ -263,26 +218,12 @@ describe('CreateSystemBffController', () => {
       );
     });
 
-    it('should ensure all related entities are persisted correctly', async () => {
+    it('should ensure all RPG entities are persisted correctly', async () => {
       const bffCreateSystemDto: BffCreateSystemDto = new BffCreateSystemDto(
-        'Complete Integration',
-        'Full integration test',
-        [
-          new CreateResourceDto('Character', [
-            new ResourceItemRequestDto('name', { type: 'string' }),
-            new ResourceItemRequestDto('level', { type: 'number' }),
-          ]),
-          new CreateResourceDto('Item', [new ResourceItemRequestDto('name', { type: 'string' })]),
-        ],
-        [
-          new CreateTemplateDto('Character Sheet', [
-            new FieldRequestDto('Name', FieldType.TEXT, [new PositionDto(1, 1), new PositionDto(1, 2)]),
-            new FieldRequestDto('Level', FieldType.NUMBER, [new PositionDto(2, 1)]),
-          ]),
-          new CreateTemplateDto('Item Card', [
-            new FieldRequestDto('Item Name', FieldType.TEXT, [new PositionDto(1, 1)]),
-          ]),
-        ],
+        'Complete D&D System',
+        'Full D&D system with all entity types',
+        [buildWeaponResource(), buildArmorResource()],
+        [buildWarriorTemplate(), buildMonsterTemplate()],
       );
 
       const createdSystem = await controller.execute(bffCreateSystemDto, userSession);
@@ -299,20 +240,20 @@ describe('CreateSystemBffController', () => {
       await expectSystemIntegrity(createdSystem.id, 2, 2);
     });
 
-    it('should handle complex template positioning correctly', async () => {
+    it('should handle complex character sheet positioning correctly', async () => {
       const bffCreateSystemDto: BffCreateSystemDto = new BffCreateSystemDto(
-        'Complex Grid System',
-        'Testing complex template grids',
+        'Advanced Character System',
+        'Complex character sheet with multi-position fields',
         [],
         [
-          new CreateTemplateDto('Complex Template', [
-            new FieldRequestDto('Field 1', FieldType.TEXT, [
+          new CreateTemplateDto('Advanced Character Sheet', [
+            new FieldRequestDto('Character Portrait', FieldType.TEXT, [
               new PositionDto(1, 1),
               new PositionDto(1, 2),
               new PositionDto(1, 3),
             ]),
-            new FieldRequestDto('Field 2', FieldType.NUMBER, [new PositionDto(2, 1), new PositionDto(2, 2)]),
-            new FieldRequestDto('Field 3', FieldType.SELECT, [new PositionDto(3, 1)]),
+            new FieldRequestDto('Attributes', FieldType.NUMBER, [new PositionDto(2, 1), new PositionDto(2, 2)]),
+            new FieldRequestDto('Equipment Slot', FieldType.SELECT, [new PositionDto(3, 1)]),
           ]),
         ],
       );
@@ -408,8 +349,98 @@ describe('CreateSystemBffController', () => {
     });
   };
 
+  const buildWeaponResource = (): CreateResourceDto => {
+    return new CreateResourceDto('Weapon', [
+      new ResourceItemRequestDto('name', 'Weapon name', { type: 'string' }),
+      new ResourceItemRequestDto('damage', 'Weapon damage dice', { type: 'string' }),
+      new ResourceItemRequestDto('weight', 'Weapon weight', { type: 'number' }),
+    ]);
+  };
+
+  const buildSpellResource = (): CreateResourceDto => {
+    return new CreateResourceDto('Spell', [
+      new ResourceItemRequestDto('name', 'Spell name', { type: 'string' }),
+      new ResourceItemRequestDto('level', 'Spell level', { type: 'number' }),
+      new ResourceItemRequestDto('school', 'Magic school', { type: 'string' }),
+    ]);
+  };
+
+  const buildArmorResource = (): CreateResourceDto => {
+    return new CreateResourceDto('Armor', [
+      new ResourceItemRequestDto('name', 'Armor name', { type: 'string' }),
+      new ResourceItemRequestDto('armorClass', 'Armor class bonus', { type: 'number' }),
+    ]);
+  };
+
+  const buildItemResource = (): CreateResourceDto => {
+    return new CreateResourceDto('Item', [
+      new ResourceItemRequestDto('name', 'Item name', { type: 'string' }),
+      new ResourceItemRequestDto('description', 'Item description', { type: 'string' }),
+    ]);
+  };
+
+  const buildWarriorTemplate = (): CreateTemplateDto => {
+    return new CreateTemplateDto('Warrior Sheet', [
+      new FieldRequestDto('Character Name', FieldType.TEXT, [new PositionDto(1, 1), new PositionDto(1, 2)]),
+      new FieldRequestDto('Strength', FieldType.NUMBER, [new PositionDto(2, 1)]),
+      new FieldRequestDto('Constitution', FieldType.NUMBER, [new PositionDto(2, 2)]),
+      new FieldRequestDto('Level', FieldType.NUMBER, [new PositionDto(3, 1)]),
+    ]);
+  };
+
+  const buildMageTemplate = (): CreateTemplateDto => {
+    return new CreateTemplateDto('Mage Sheet', [
+      new FieldRequestDto('Character Name', FieldType.TEXT, [new PositionDto(1, 1)]),
+      new FieldRequestDto('Intelligence', FieldType.NUMBER, [new PositionDto(2, 1)]),
+      new FieldRequestDto('Mana Points', FieldType.NUMBER, [new PositionDto(2, 2)]),
+      new FieldRequestDto('Spell Slots', FieldType.TEXT, [new PositionDto(3, 1)]),
+    ]);
+  };
+
+  const buildMonsterTemplate = (): CreateTemplateDto => {
+    return new CreateTemplateDto('Monster Card', [
+      new FieldRequestDto('Monster Name', FieldType.TEXT, [new PositionDto(1, 1)]),
+      new FieldRequestDto('Hit Points', FieldType.NUMBER, [new PositionDto(2, 1)]),
+      new FieldRequestDto('Challenge Rating', FieldType.NUMBER, [new PositionDto(2, 2)]),
+    ]);
+  };
+
+  const buildSimpleCharacterTemplate = (): CreateTemplateDto => {
+    return new CreateTemplateDto('Simple Character', [
+      new FieldRequestDto('Name', FieldType.TEXT, [new PositionDto(1, 1)]),
+      new FieldRequestDto('Level', FieldType.NUMBER, [new PositionDto(2, 1)]),
+    ]);
+  };
+
+  const buildDnDSystem = (): BffCreateSystemDto => {
+    return new BffCreateSystemDto(
+      'Dungeons & Dragons 5e',
+      'Classic fantasy tabletop RPG system',
+      [buildWeaponResource(), buildSpellResource(), buildArmorResource()],
+      [buildWarriorTemplate(), buildMageTemplate()],
+    );
+  };
+
+  const buildPathfinderSystem = (): BffCreateSystemDto => {
+    return new BffCreateSystemDto(
+      'Pathfinder 2e',
+      'Fantasy RPG with tactical combat',
+      [buildWeaponResource(), buildSpellResource()],
+      [buildWarriorTemplate()],
+    );
+  };
+
+  const buildGenericFantasySystem = (): BffCreateSystemDto => {
+    return new BffCreateSystemDto(
+      'Generic Fantasy RPG',
+      'A simple fantasy RPG system for beginners',
+      [buildItemResource()],
+      [buildSimpleCharacterTemplate()],
+    );
+  };
+
   const buildValidResource = (name: string = 'Valid Resource'): CreateResourceDto => {
-    const items = [new ResourceItemRequestDto('name', { type: 'string' })];
+    const items = [new ResourceItemRequestDto('name', 'Resource name', { type: 'string' })];
     return new CreateResourceDto(name, items);
   };
 
@@ -428,7 +459,9 @@ describe('CreateSystemBffController', () => {
   };
 
   const buildSystemWithInvalidResource = (): BffCreateSystemDto => {
-    const invalidResource = new CreateResourceDto('', [new ResourceItemRequestDto('name', { type: 'string' })]);
+    const invalidResource = new CreateResourceDto('', [
+      new ResourceItemRequestDto('name', 'Resource name', { type: 'string' }),
+    ]);
     return new BffCreateSystemDto('Invalid Resource System', 'Testing resource validation', [invalidResource], []);
   };
 

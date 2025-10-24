@@ -15,5 +15,6 @@ import { ResourcesRepository } from './infraestructure/resources.mongoose.reposi
       useClass: ResourcesRepository,
     },
   ],
+  exports: [ResourcesService],
 })
 export class ResourcesModule {}

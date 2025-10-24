@@ -26,5 +26,6 @@ import { LikesModule } from '../likes/likes.module';
       useClass: SystemRepository,
     },
   ],
+  exports: [SystemsService],
 })
 export class SystemsModule {}
